@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Nueva Publicación - PetConnect</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fff8f4; /* surface */
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .pet-avatar-active {
+            box-shadow: 0 0 0 4px #5b3300; /* on-primary-container offset ring */
+        }
+        .glass-effect {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#004365",
+                        "inverse-surface": "#170c00",
+                        "error-container": "#fa7150",
+                        "secondary-container": "#cae6ff",
+                        "on-error-container": "#671200",
+                        "surface-variant": "#ffddb3",
+                        "primary-fixed": "#ffb05e",
+                        "inverse-on-surface": "#b49876",
+                        "on-primary-fixed": "#3e2100",
+                        "outline-variant": "#d6aa6f",
+                        "error": "#aa371c",
+                        "primary-fixed-dim": "#ff9c1f",
+                        "tertiary-fixed": "#fdd400",
+                        "on-tertiary": "#fff8ed",
+                        "background": "#fff8f4",
+                        "on-surface": "#482d00",
+                        "inverse-primary": "#ff9800",
+                        "primary-container": "#ffb05e",
+                        "on-secondary-container": "#005780",
+                        "tertiary-dim": "#635200",
+                        "on-tertiary-fixed": "#433700",
+                        "primary-dim": "#7b4700",
+                        "tertiary-container": "#fdd400",
+                        "secondary-fixed": "#cae6ff",
+                        "surface-container-high": "#ffe4c4",
+                        "on-error": "#fff7f6",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#ffddb3",
+                        "outline": "#9a743e",
+                        "primary": "#8c5100",
+                        "surface-bright": "#fff8f4",
+                        "surface-tint": "#8c5100",
+                        "tertiary": "#715e00",
+                        "on-tertiary-container": "#594a00",
+                        "surface-container-low": "#fff1e4",
+                        "on-primary-fixed-variant": "#673b00",
+                        "on-secondary": "#f5f9ff",
+                        "surface": "#fff8f4",
+                        "on-surface-variant": "#7b5925",
+                        "secondary": "#006594",
+                        "on-secondary-fixed-variant": "#00618f",
+                        "on-tertiary-fixed-variant": "#645300",
+                        "secondary-fixed-dim": "#addaff",
+                        "tertiary-fixed-dim": "#edc600",
+                        "on-primary": "#fff7f4",
+                        "surface-dim": "#ffd399",
+                        "surface-container": "#ffebd4",
+                        "secondary-dim": "#005882",
+                        "error-dim": "#821a01",
+                        "on-background": "#482d00",
+                        "on-primary-container": "#5b3300"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    }
+                },
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface">
+<!-- TopAppBar (Transactional: Centered Title + Close) -->
+<header class="flex justify-between items-center px-6 py-4 w-full bg-[#fff1e4] dark:bg-stone-900 sticky top-0 z-50">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors active:scale-95 duration-150 ease-out">
+<span class="material-symbols-outlined text-on-surface text-2xl">close</span>
+</button>
+<h1 class="font-headline font-bold text-lg text-on-surface tracking-tight">Nueva Publicación</h1>
+<div class="w-10"></div> <!-- Spacer for balance -->
+</header>
+<main class="max-w-2xl mx-auto px-6 pt-6 pb-32">
+<!-- Content Container -->
+<div class="flex flex-col gap-8">
+<!-- Image Preview Area -->
+<section class="relative group">
+<div class="aspect-square w-full rounded-lg overflow-hidden surface-container-low relative">
+<img alt="Preview" class="w-full h-full object-cover" data-alt="Close-up portrait of a happy Golden Retriever sitting in a sunlit garden with soft bokeh background and warm golden light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDV-GKQlUVlLBL-btZxFvhDcOvg85C1S5hnRnl7WZu5e9Vh8I9HTY5OfkLBM-WO4pTpyLQ20jG_DYviZTO5gZ9iqguV7ov3UuPjwkIFYbGnk87TvUfBXIyZB-v9F2rn3q9LO9GUMLAz8urKn4CeKA9Qm86X5jPlLh5Vs1yABd625UV899xaTfAIqaWlIf2RRODlrFCr-94eT35r149j1fYdD8RxA-QeyZh1mHFXI0lSSrMnaDJnaEYe5H-1oujveAEFMUc9X_uPnsJQ"/>
+<!-- Overlay Interaction -->
+<div class="absolute inset-0 bg-on-surface/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<button class="bg-surface-container-lowest/80 backdrop-blur-md px-6 py-3 rounded-xl flex items-center gap-2 font-bold text-on-surface">
+<span class="material-symbols-outlined">edit</span>
+                            Editar
+                        </button>
+</div>
+</div>
+<!-- Asymmetric Floating Icon -->
+<div class="absolute -bottom-4 -right-4 bg-tertiary-container p-4 rounded-xl shadow-lg transform rotate-3">
+<span class="material-symbols-outlined text-on-tertiary-container" style="font-variation-settings: 'FILL' 1;">photo_camera</span>
+</div>
+</section>
+<!-- Caption Text Area -->
+<section>
+<textarea class="w-full bg-surface-container-highest border-none rounded-lg p-6 text-on-surface placeholder:text-on-surface-variant/60 focus:ring-2 focus:ring-secondary/40 focus:ring-offset-0 transition-all resize-none font-body text-lg leading-relaxed" placeholder="Escribe algo sobre este momento..." rows="3"></textarea>
+</section>
+<!-- Pet Selection Section -->
+<section class="flex flex-col gap-4">
+<h3 class="text-on-surface font-headline font-bold text-md px-1">¿Quién aparece en la foto?</h3>
+<div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+<!-- Pet Bubble 1 (Active) -->
+<div class="flex flex-col items-center gap-2 min-w-max">
+<div class="w-16 h-16 rounded-xl overflow-hidden pet-avatar-active transition-all ring-offset-2 ring-transparent">
+<img alt="Pet" class="w-full h-full object-cover" data-alt="Small fluffy white dog headshot looking at the camera, friendly expression, indoor lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUAVV2bl_pEmCIie1928rWn0ZdSwqIMdj04e84C3n9EZY2NMw97gTBGtwQklkc9DDtUPq2EtPRi7d57TrK7aMuZhvuuEVUbah_hpmKycQHXN67SQbmEF5CKQp3XqvczENJtY9EaCp3q6xCoNHoruIgibz5akPTHk33c1Y871hWcdzzVDaEZycNNn-iv-9MOVVzKSgp4SIwJJqwKAYXAD2Mu0ZM-bJBqZsqIZktuTej5nq9h0Z91OBQ02hQbSWPp5m63EjLP_hybFdv"/>
+</div>
+<span class="text-[10px] font-label font-bold text-primary">Buddy</span>
+</div>
+<!-- Pet Bubble 2 -->
+<div class="flex flex-col items-center gap-2 min-w-max opacity-60">
+<div class="w-16 h-16 rounded-xl overflow-hidden hover:opacity-100 transition-all cursor-pointer">
+<img alt="Pet" class="w-full h-full object-cover" data-alt="Cute tabby cat face close up with green eyes and soft fur texture, warm indoor setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDB_TRfnM7AabMjulVLI4H_7SO_dyBIJTw2NMuZ0PTczjwbBXxgv9OXb6H96VImFhWlH4bbKz3wreCcr_uhJdyCtyg3DR6cNmgy288UsiKzio3Fd9r3QeehbA6lO3okyiqEwhRLE4WKao6BY_eXjNF6DrebjGoULci0Ix6fGL75aojpxAc0DLPoNKBPmXxzpIfm67wlDXT-qCCdr2dmms4WH3QHLlcRrH6-aPSSoVRcNhocOOW5gKp7oHYlTqsT6txM76W00FCUlDeK"/>
+</div>
+<span class="text-[10px] font-label font-medium text-on-surface-variant">Luna</span>
+</div>
+<!-- Add New Pet Bubble -->
+<div class="flex flex-col items-center gap-2 min-w-max">
+<button class="w-16 h-16 rounded-xl bg-surface-container-high flex items-center justify-center hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">add</span>
+</button>
+<span class="text-[10px] font-label font-medium text-on-surface-variant">Añadir</span>
+</div>
+</div>
+</section>
+<!-- Interaction Rows (No-Line Rule: Background shifts) -->
+<section class="flex flex-col gap-2">
+<div class="flex items-center justify-between p-5 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<span class="font-body font-semibold">Etiquetar amigos</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-5 rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<span class="font-body font-semibold">Añadir ubicación</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</div>
+</section>
+</div>
+</main>
+<!-- Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 w-full p-6 glass-effect flex justify-center items-center z-50">
+<button class="w-full max-w-lg bg-primary text-on-primary py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 hover:bg-primary-dim transition-all active:scale-95 duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+            Publicar
+        </button>
+</div>
+<!-- Background Decoration (Asymmetry) -->
+<div class="fixed top-24 -left-20 w-64 h-64 bg-primary-container/10 rounded-full blur-3xl -z-10"></div>
+<div class="fixed bottom-32 -right-20 w-80 h-80 bg-secondary-container/20 rounded-full blur-3xl -z-10"></div>
+</body></html>
