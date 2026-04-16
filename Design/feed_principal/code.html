@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#ffb05e",
+                        "on-tertiary-fixed": "#433700",
+                        "tertiary-dim": "#635200",
+                        "outline-variant": "#d6aa6f",
+                        "on-secondary-fixed": "#004365",
+                        "primary-dim": "#7b4700",
+                        "on-tertiary-container": "#594a00",
+                        "surface-container-low": "#fff1e4",
+                        "error-container": "#fa7150",
+                        "secondary-dim": "#005882",
+                        "inverse-on-surface": "#b49876",
+                        "error-dim": "#821a01",
+                        "on-primary-fixed": "#3e2100",
+                        "inverse-primary": "#ff9800",
+                        "on-primary": "#fff7f4",
+                        "on-surface-variant": "#7b5925",
+                        "primary-fixed-dim": "#ff9c1f",
+                        "surface": "#fff8f4",
+                        "background": "#fff8f4",
+                        "secondary-fixed-dim": "#addaff",
+                        "surface-tint": "#8c5100",
+                        "secondary-container": "#cae6ff",
+                        "tertiary-fixed": "#fdd400",
+                        "surface-variant": "#ffddb3",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#fff7f6",
+                        "surface-container": "#ffebd4",
+                        "on-tertiary": "#fff8ed",
+                        "inverse-surface": "#170c00",
+                        "on-error-container": "#671200",
+                        "primary-fixed": "#ffb05e",
+                        "surface-dim": "#ffd399",
+                        "on-secondary": "#f5f9ff",
+                        "on-secondary-fixed-variant": "#00618f",
+                        "on-primary-container": "#5b3300",
+                        "on-secondary-container": "#005780",
+                        "on-tertiary-fixed-variant": "#645300",
+                        "surface-bright": "#fff8f4",
+                        "on-primary-fixed-variant": "#673b00",
+                        "outline": "#9a743e",
+                        "tertiary-container": "#fdd400",
+                        "on-background": "#482d00",
+                        "error": "#aa371c",
+                        "secondary-fixed": "#cae6ff",
+                        "tertiary-fixed-dim": "#edc600",
+                        "tertiary": "#715e00",
+                        "surface-container-highest": "#ffddb3",
+                        "surface-container-high": "#ffe4c4",
+                        "secondary": "#006594",
+                        "on-surface": "#482d00",
+                        "primary": "#8c5100"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-glass {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation Anchor -->
+<header class="bg-[#fff8f4] dark:bg-stone-950 docked full-width top-0 z-50 fixed">
+<div class="flex justify-between items-center w-full px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-on-primary-container flex items-center justify-center overflow-hidden border-2 border-on-primary-container">
+<img class="w-full h-full object-cover" data-alt="close up of a cheerful golden retriever puppy face with soft focus natural park background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAb-y5HxNU7dH__KD6eO1LODil57rz-zQqeE__pfMZ692AJdoryUIIBPFqfW1pQMkaCd7ykOjvEayaVLNS1vDTzTf-We3uWL8veO4Jglybzkx7izVJjNV5qlLkEbo_vQzDh852aO4kZA1i1I_pGxIKn26Kt24FfSSOgN_B0AGVW2zkO8Jil5KZXSLDYBYjYY0A6ob72r8zWQAgjCx3onHb020KOxVnwSSPiJMxFt2uO9kkqwxzZpRa-dKp3xeaSjIIX0_ku-s6llvz3"/>
+</div>
+<h1 class="font-['Plus_Jakarta_Sans'] text-2xl font-black text-[#482d00] dark:text-[#fff1e4] tracking-tighter">PetConnect</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#fff1e4] dark:hover:bg-stone-800 transition-colors active:scale-95 text-[#8c5100]">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Feed Content -->
+<main class="pt-24 pb-32 max-w-xl mx-auto px-4 space-y-8">
+<!-- Story/Avatar Row -->
+<section class="flex gap-4 overflow-x-auto no-scrollbar py-2">
+<div class="flex flex-col items-center gap-1 shrink-0">
+<div class="w-20 h-20 rounded-xl p-1 bg-gradient-to-tr from-tertiary-container to-primary">
+<div class="w-full h-full rounded-[1.25rem] bg-surface flex items-center justify-center border-2 border-surface overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="portrait of a fluffy siberian cat with bright blue eyes in soft daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBib1JmLHzH-iBFs632xDNza92ndqf1bq7efykkYN4c4-NDTQ9d1yKJB9PMBsmSEJUbAnT3gYUZldzKPZNeFXf3VO2UvoMWFlDpOKYSULtcdjQ7N30Ca7yq9tbXjhWTR9yWDmltBynYWJhYQ7JgO4LnVDYYnqP3gCIMaxp7qyDOn-lNhcrQYqNlygwy0ftg_s6SLIln_mnIJGH1jzKfeJLV2R0qHzXDEV-WEnPY6_Zz7IwKUG5VtH_-uUUHISAnRefzCw21ACocwH25"/>
+</div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant">Luna</span>
+</div>
+<div class="flex flex-col items-center gap-1 shrink-0">
+<div class="w-20 h-20 rounded-xl p-1 bg-gradient-to-tr from-tertiary-container to-primary">
+<div class="w-full h-full rounded-[1.25rem] bg-surface flex items-center justify-center border-2 border-surface overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="energetic border collie jumping in the air in a sunny backyard with grass" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmOpGzjfkn9k9UuHc0qoaMZANoFyZTmCMJhQYhBpgN3zBVaSOOFZcIVHj97J2PEmvyXpPaAkg5YO63GTjFiRTeGzRyvdFEvjy7n0tyy-vnzYSlWByGAyiIlcTOlTKME61uXXZ6KG23ytjY3HyxGQHMJyST9eb9NybUSv_IE_PAZC2iyANMHjDES_lbd0uZZOQOlQgzgM5hEeqrdnc8mAVyf9-nl34eSwIXVfZmTw82ewcuRiC2FXDbdatcQzI99ewz7v8OFcSO0Xrm"/>
+</div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant">Cooper</span>
+</div>
+<div class="flex flex-col items-center gap-1 shrink-0">
+<div class="w-20 h-20 rounded-xl p-1 bg-surface-container-high">
+<div class="w-full h-full rounded-[1.25rem] bg-surface flex items-center justify-center border-2 border-surface overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="sleepy french bulldog pup wrapped in a beige knitted blanket" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2sjYeseiAf9bPRrZSCj9vgjq9KzCtCenNKl53bX1LKp9ihbxTPnPFJvInjq_u533emv-O9XTGYlksHYMdTq0F5KZ9URtYkX43qCn7Kemm3IeP2twiy_2CBo0W116qKmWtZkuSzyVAfKAUyvRFxl7-Vvq2-7bo8RrSyd0KufpC7k8vbqPi3RTzRFFxMJOGEUp-1NE1cajRRgGVdbWkQ8wt-yJ9rcShYKGcNHuYvEt8sPzW8pzLEPQn_URS0wucuxXIZoFRq5XftTZb"/>
+</div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant">Mochi</span>
+</div>
+<div class="flex flex-col items-center gap-1 shrink-0">
+<div class="w-20 h-20 rounded-xl p-1 bg-surface-container-high">
+<div class="w-full h-full rounded-[1.25rem] bg-surface flex items-center justify-center border-2 border-surface overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="majestic maine coon cat sitting on a wooden porch in autumn light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4U258FKF9Wgmadnr3mhXLnwt4x8HdyxcLDVe6q4UTB2U0VR92TFkrAUSykXssvzPFWm91b9IliJ6R8t6GoucC9uskSJz0Q3vcZz9nDxJWDXmrZbYGQg9du9Mxs7FxSqeeHoPeqkDo31fL-vy8_N4ewvfziAtwnghI6zZBeamUAd0TQk5y_3dhiOvUzYLVyZyZwrH9cDECeHJKwDwSvTHEaSJJBvcsgzNRPhy1oJ8lNPzvXtl4bwgbHkzkMknfz_dpaJju9XdH8PL8"/>
+</div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant">Leo</span>
+</div>
+</section>
+<!-- Post 1: Asymmetric Hero Card -->
+<article class="bg-surface-container-lowest rounded-lg overflow-hidden shadow-[0_20px_40px_rgba(72,45,0,0.06)] relative group">
+<div class="p-5 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-xl bg-surface-container overflow-hidden ring-4 ring-on-primary-container/5">
+<img class="w-full h-full object-cover" data-alt="man with beard smiling holding a small chihuahua" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKN-mtKO2j4szp5c_SV5awYlpKkAWgzfQUDC-fesu8l7-hAux8cC5ITtO2AalRtnlYsFpgyMMg_HymHhnjpWyMxi2lrAeAw_6pHnzx_9i5DWLgrly2buWL-TRBZgEGU8ki3bqPg1xEJ6rcCWSrDpn5qiU4Q8zhxwro-CloLRLVYCwIg4ghp8W_WCEd-YQUBiLF01C2FdPU3NY26gPzQXmxNf8HnsapD4pKB-R1Ax7GJQi8WHpRoggzcIwC2PU3iDh88XgrY8y9nEAx"/>
+</div>
+<div>
+<h3 class="font-bold text-on-surface leading-tight">Oliver &amp; Max</h3>
+<p class="text-xs text-on-surface-variant">Madrid, Spain</p>
+</div>
+</div>
+<button class="text-on-surface-variant"><span class="material-symbols-outlined" data-icon="more_horiz">more_horiz</span></button>
+</div>
+<div class="relative px-4">
+<div class="aspect-[4/5] rounded-lg overflow-hidden bg-surface-container-low shadow-inner">
+<img class="w-full h-full object-cover" data-alt="a majestic shiba inu dog standing on a mossy rock in a forest with sun rays through trees" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCD2QU7JIs4lA4zWZkZ42DVFeBnTpE2gOdrdI7PY7hR3exmaRBf4dNy2XVA9qK0iz-k2Zh9s1D06Z4zqGS5TwIk2YqiZEuNYdK-GVuaDClFigJUXuVuUW18O4JO-6iUYKaBMS8E44J-X9Hbq3U0VcQb45XVRvO6dXF4WTyZoLxX10IcFMvZdoP-InHTFrm8MLtfR14bAMWgRA0bMIUaQvLQtznqtjPaTqQ3yorCplQZF9bjAu1yhVPhzzXqWYmkXBH9MhIVDEdxIcGN"/>
+</div>
+<!-- Interaction Bar Floating Over Image -->
+<div class="absolute bottom-6 left-8 right-8 flex justify-between items-center bg-white/80 backdrop-blur-xl py-3 px-6 rounded-full shadow-lg border border-white/20">
+<div class="flex items-center gap-6">
+<button class="flex items-center gap-2 group active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-primary" data-icon="pets" style="font-variation-settings: 'FILL' 1;">pets</span>
+<span class="text-xs font-bold text-primary">1.2k</span>
+</button>
+<button class="flex items-center gap-2 text-on-surface-variant active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+<span class="text-xs font-bold">42</span>
+</button>
+</div>
+<button class="text-on-surface-variant active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="share">share</span>
+</button>
+</div>
+</div>
+<div class="p-6 pt-8 pb-10">
+<p class="text-on-surface text-md leading-relaxed">
+<span class="font-bold">Max</span> just discovered the magic of forest hikes! 🌲 Who else has a dog that loves the outdoors more than their bed?
+                </p>
+</div>
+</article>
+<!-- Post 2: Editorial Bento Style -->
+<article class="space-y-4">
+<div class="flex items-center gap-3 px-2">
+<div class="w-10 h-10 rounded-xl bg-secondary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="woman with ginger hair laughing with a calico cat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTtWMr-25jr4blHurOFtTy3H3hw_UKG44MzEhF2w1tlXuEF0NDfIsqPbD3dXY1y23y__iu4nwZGU8JQDt10lzUagCRLgTUKuNq2hSUYHmDkEVgWNtWcPAj9GUFaLBEAJQRjPPUZ_-9j9dEHUH-3JXwuDgjaocg8sIeWNKjATp06bG23LJldQ_R6Om_AVFWigmu2rAXc6ExV7K5TI8TWfwv6fdRkKNF4_PwXSFoWq7-ALnqUGHt71lJsBX5N3MQDnuPCbcIEO6tMgAM"/>
+</div>
+<div>
+<h3 class="text-sm font-bold text-on-surface">Elena's Purrfect World</h3>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">Today • 2 hours ago</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="aspect-square bg-surface-container-high rounded-lg overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="close up of a cat paw on a wooden floor in golden sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6wxwz--WxoJWsv_v8HEn6o5zqFWIGtyB5A0mZTLyRnaXuoeHLznbSRugI_i7oKghoWHW7WD3fr1OTuoUEM0keI_Uy4FmFjBxhgAeF1CyHSCNy1AHNE7p1hFPWX_D2bXLvgF2XweHfKbifSBnJefak6uUP0Lv1_ob1ee9pl9jCs6jh8pFLwvMizpQQYAkLs9zNLmkBy9z2RK_Htr4cbuS3eEN0xPeQo5Zmv6_d6lsdZiw-QdtFDQdnQAAnF4Ppwkmid6yz6tDjCQPf"/>
+</div>
+<div class="aspect-square bg-surface-container-high rounded-lg overflow-hidden mt-8">
+<img class="w-full h-full object-cover" data-alt="a calico cat curled up on a cream colored soft rug" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAPC_6uCVJgUjefQqjhE3qwYncctBFodV4JPA7kRDtBoEVLbT0Jgx05xAO7MfQ54cRG4KKeBWUViHUUVqsYdzDcnjHcavUi24aOpy9QTbm04iOWiKb3PMbbul0SNBIHxLE61v2fcwC4E5tjzRk_k5mTI2dNWA7UBoOJ3V5ftCeg-TRrNEbNkHVFtuOFUwoAvlbMIIMuPxoKj93Ho2U-fAM31iytu6v1Jk7OVPoDYP77uC0djtkREpoKBHTKXRVfS0jYyePbCyCsGz1"/>
+</div>
+</div>
+<div class="bg-tertiary-container/10 p-6 rounded-lg relative overflow-hidden">
+<div class="absolute -top-4 -right-4 w-24 h-24 bg-tertiary-container/20 rounded-full blur-2xl"></div>
+<p class="text-on-surface italic font-medium leading-snug">"There is no snooze button on a cat that wants breakfast." — Sunday morning thoughts with Bella.</p>
+<div class="mt-6 flex items-center justify-between">
+<div class="flex -space-x-3">
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-primary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="user avatar 1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApSYgiyMxg6BFO22vnkiFjz5u37K5x44isSL3TcVifu_57PQuNjTV12TItheTxrVFl28C5gQWt1sUxblZ1BxlUwppMBzS3MG36E9Tup35r6TD2HqH7ljVS_5tFtfpsDPBMqqYz0NvLeO16hWFVN_ElsfY-7xDGOMeWoE_ZehbmP9k8U_rw9AHoxZLam0W2xDssvwYIgWyhlbvMezZZm4cSfGaGdkz2xv0BMvVgLqVT5-ogN5X-ynj1M4uctKXDxa4CIV8VPjFK4SIM"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-secondary-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="user avatar 2" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDodqIa-G4eONdZtyQODT1vQ21nCng0oYrLSOQxA5ygqDSE1CDwuUrTSGlBRfK6FS4CfAeVCiIIHWstdRccTDHNmW0GFrSN3l2a19YooAIskoCXpCobdWuZMvNSyRum3CbO30SN1pqDxob9OzCv2LQX7yZep2zUhRRTOI4jG_V7dasP93sZrwZiQc2JKrZIh-5PPVaLK__5JfoRtpIrtjnjmXWj_GGEvFdiL6QoSrUJaYIdUzj6dl0yFVQjBtpFkQUTZdH3I1TcrBnd"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-surface bg-tertiary-container flex items-center justify-center text-[10px] font-bold">
+                            +18
+                        </div>
+</div>
+<div class="flex gap-4">
+<button class="w-10 h-10 bg-surface-container-lowest shadow-sm rounded-full flex items-center justify-center text-primary active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="pets">pets</span>
+</button>
+<button class="w-10 h-10 bg-surface-container-lowest shadow-sm rounded-full flex items-center justify-center text-on-surface-variant active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+</button>
+</div>
+</div>
+</div>
+</article>
+<!-- Post 3: Full Width Visual Focus -->
+<article class="bg-surface-container-lowest rounded-lg overflow-hidden shadow-[0_10px_30px_rgba(72,45,0,0.04)]">
+<div class="aspect-video relative group">
+<img class="w-full h-full object-cover" data-alt="wide shot of a group of different dogs running in a green open field under a blue sky" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbW-Us0WWXRpmf8hY-_6NdcM5R3N6zY5dVVvM_JQD4Mx93ij_5k20sBAikFdji843XOuYNls8AAQObMCIocxBqnTMUZmccCsd6_N2f7eEyydTCnKMbYCZBPuNz8ZsCSygvZmCdjLe9hEgJ6mt2u71EaIiIVWqkmgSKQnQF6TkiYVKlmekbEYJZ8JfFvdilHD_VD1I2_y7_t7iW3jYJ14hkyiUi7Apgyb764laPwv0_xo7XryEps19ZvxINSG2Q9wMoZksS4B8ub3aa"/>
+<div class="absolute top-4 left-4">
+<div class="px-3 py-1.5 bg-tertiary-container text-on-tertiary-container text-[10px] font-black uppercase tracking-tighter rounded-full">Community Event</div>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+<p class="text-white text-sm font-medium">Summer Fetch Meetup 2024. See all 45 photos.</p>
+</div>
+</div>
+<div class="p-5 flex items-center justify-between border-t border-outline-variant/10">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl" data-icon="celebration">celebration</span>
+<span class="text-xs font-bold text-on-surface">324 people attended</span>
+</div>
+<button class="text-primary font-bold text-xs">Join Group</button>
+</div>
+</article>
+</main>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-[#ffffff]/80 dark:bg-stone-900/80 backdrop-blur-xl rounded-t-[3rem] shadow-[0_-10px_40px_rgba(72,45,0,0.06)]">
+<!-- Active Tab: Inicio -->
+<a class="flex flex-col items-center justify-center bg-[#8c5100] text-white rounded-full p-3 active:scale-90 transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+</a>
+<!-- Inactive Tab: Buscar -->
+<a class="flex flex-col items-center justify-center text-[#7b5925] dark:text-stone-400 p-3 hover:opacity-80 transition-opacity active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</a>
+<!-- Inactive Tab: Añadir Post -->
+<a class="flex flex-col items-center justify-center text-[#7b5925] dark:text-stone-400 p-3 hover:opacity-80 transition-opacity active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</a>
+<!-- Inactive Tab: Mi Perfil -->
+<a class="flex flex-col items-center justify-center text-[#7b5925] dark:text-stone-400 p-3 hover:opacity-80 transition-opacity active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</a>
+</nav>
+<!-- FAB: Post Something -->
+<div class="fixed bottom-28 right-6 z-40">
+<button class="w-16 h-16 bg-primary text-on-primary rounded-xl shadow-xl flex items-center justify-center hover:bg-primary-dim transition-all active:scale-95 shadow-primary/20">
+<span class="material-symbols-outlined text-3xl" data-icon="add">add</span>
+</button>
+</div>
+</body></html>
