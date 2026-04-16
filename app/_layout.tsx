@@ -47,9 +47,21 @@ export default function RootLayout() {
 
     checkAuth();
 
+    let timeoutId: NodeJS.Timeout | null = null;
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         if (!isMounted) return;
+
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+
+        // Si existe una sesión activa, programar un cierre forzado después de 1 hora exacta (3600000 ms)
+        if (session) {
+          timeoutId = setTimeout(async () => {
+            await supabase.auth.signOut();
+          }, 3600000);
+        }
 
         const inAuthGroup = segments[0] === "(tabs)";
 
@@ -66,6 +78,7 @@ export default function RootLayout() {
 
     return () => {
       isMounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
       authListener.subscription.unsubscribe();
     };
   }, [segments, router]);

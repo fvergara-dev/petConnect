@@ -11,6 +11,19 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: styles.tabBar,
         tabBarShowLabel: false,
+
+        // --- LA SOLUCIÓN DEFINITIVA A LA SUPERPOSICIÓN VIRTUAL ---
+        // 1. Elimina el padding invisible que reserva React Navigation para la SafeArea y el texto label
+        safeAreaInsets: { bottom: 0, top: 0, left: 0, right: 0 },
+        tabBarItemStyle: {
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        },
+        // 2. Fuerzo a que el ícono consuma su contenedor y borro el empuje default hacia arriba
+        tabBarIconStyle: {
+          flex: 1,
+        },
       }}
     >
       <Tabs.Screen
@@ -99,7 +112,9 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    borderWidth: 0,
+    borderTopWidth: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
   },
   iconContainer: {
     width: 44,
@@ -107,6 +122,8 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
+    margin: 0,
+    padding: 0,
   },
   activeBackground: {
     backgroundColor: "#8A5A19",

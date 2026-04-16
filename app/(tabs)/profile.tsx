@@ -1,12 +1,13 @@
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { decode } from "base64-arraybuffer";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
+  FlatList,
   Image,
+  Modal,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -43,14 +44,36 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [pet, setPet] = useState<any>(null);
+  const [posts, setPosts] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
+
+  // Estados para seguidores y seguidos
+  const [followers, setFollowers] = useState<any[]>([]);
+  const [following, setFollowing] = useState<any[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalType, setModalType] = useState<"followers" | "following">(
+    "followers",
+  );
+  const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
+
+  const [genericAlert, setGenericAlert] = useState<{
+    title: string;
+    message: string;
+  } | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
 
   // Como esta es la pestaña "Mi Perfil", es isMyProfile = true
   const isMyProfile = true;
 
-  useEffect(() => {
-    fetchProfileData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfileData();
+    }, []),
+  );
 
   const fetchProfileData = async () => {
     try {
@@ -80,6 +103,57 @@ export default function ProfileScreen() {
         if (!petError && petData) {
           setPet(petData);
         }
+
+        const { data: postsData, error: postsError } = await supabase
+          .from("posts")
+          .select("*")
+          .eq("author_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (!postsError && postsData) {
+          setPosts(postsData);
+        }
+
+        // Fetch Follows
+        const { data: followingData } = await supabase
+          .from("follows")
+          .select("following_id")
+          .eq("follower_id", user.id);
+
+        const { data: followersData } = await supabase
+          .from("follows")
+          .select("follower_id")
+          .eq("following_id", user.id);
+
+        const followedIds = followingData?.map((f) => f.following_id) || [];
+        const followerIds = followersData?.map((f) => f.follower_id) || [];
+
+        const newFollowMap: Record<string, boolean> = {};
+        followedIds.forEach((id) => (newFollowMap[id] = true));
+        setFollowingMap(newFollowMap);
+
+        if (followedIds.length > 0 || followerIds.length > 0) {
+          const uniqueIds = Array.from(
+            new Set([...followedIds, ...followerIds]),
+          );
+          const { data: profilesData, error: profError } = await supabase
+            .from("profiles")
+            .select("*")
+            .in("id", uniqueIds);
+
+          if (profError) {
+            console.error("Error fetching profiles:", profError);
+          }
+
+          if (profilesData) {
+            setFollowing(
+              profilesData.filter((p) => followedIds.includes(p.id)),
+            );
+            setFollowers(
+              profilesData.filter((p) => followerIds.includes(p.id)),
+            );
+          }
+        }
       }
     } catch (error) {
       console.log("Error general:", error);
@@ -91,28 +165,21 @@ export default function ProfileScreen() {
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      Alert.alert("Error al cerrar sesión", error.message);
+      setGenericAlert({
+        title: "Error al cerrar sesión",
+        message: error.message,
+      });
     } else {
       router.replace("/login");
     }
   };
 
   const confirmLogout = () => {
-    if (Platform.OS === "web") {
-      const confirm = window.confirm(
-        "¿Estás seguro de que deseas salir de tu cuenta?",
-      );
-      if (confirm) handleLogout();
-    } else {
-      Alert.alert(
-        "Cerrar sesión",
-        "¿Estás seguro de que deseas salir de tu cuenta?",
-        [
-          { text: "Cancelar", style: "cancel" },
-          { text: "Salir", style: "destructive", onPress: handleLogout },
-        ],
-      );
-    }
+    setConfirmModal({
+      title: "Cerrar sesión",
+      message: "¿Estás seguro de que deseas salir de tu cuenta?",
+      onConfirm: handleLogout,
+    });
   };
 
   const changeAvatar = async () => {
@@ -173,11 +240,10 @@ export default function ProfileScreen() {
 
       setProfile({ ...profile, avatar_url: publicUrl });
     } catch (error: any) {
-      if (Platform.OS === "web") {
-        window.alert(error.message);
-      } else {
-        Alert.alert("Error subiendo avatar", error.message);
-      }
+      setGenericAlert({
+        title: "Error subiendo avatar",
+        message: error.message,
+      });
     } finally {
       setUploading(false);
     }
@@ -208,14 +274,156 @@ export default function ProfileScreen() {
       if (updateError) throw updateError;
       setProfile({ ...profile, avatar_url: null });
     } catch (error: any) {
-      if (Platform.OS === "web") {
-        window.alert(error.message);
-      } else {
-        Alert.alert("Error eliminando avatar", error.message);
-      }
+      setGenericAlert({
+        title: "Error eliminando avatar",
+        message: error.message,
+      });
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleFollowUser = async (accountId: string) => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const isFollowing = followingMap[accountId];
+
+      // Update UI optimistically
+      setFollowingMap((prev) => ({ ...prev, [accountId]: !isFollowing }));
+
+      if (isFollowing) {
+        await supabase
+          .from("follows")
+          .delete()
+          .eq("follower_id", user.id)
+          .eq("following_id", accountId);
+
+        setFollowing((prev) => prev.filter((f) => f.id !== accountId));
+      } else {
+        await supabase
+          .from("follows")
+          .insert({ follower_id: user.id, following_id: accountId });
+
+        // Fetch the user data again minimally to add to 'following' list
+        const { data: newFollowing, error: nfError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", accountId)
+          .single();
+
+        if (nfError) {
+          console.error("Error new following profile", nfError);
+        }
+
+        if (newFollowing) {
+          setFollowing((prev) => [...prev, newFollowing]);
+        }
+      }
+    } catch (e) {
+      console.warn("Error following", e);
+    }
+  };
+
+  const openFollowModal = (type: "followers" | "following") => {
+    setModalType(type);
+    setModalVisible(true);
+  };
+
+  const renderFollowMenu = () => {
+    const list = modalType === "followers" ? followers : following;
+
+    return (
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {modalType === "followers" ? "Seguidores" : "Seguidos"}
+              </Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <MaterialIcons
+                  name="close"
+                  size={24}
+                  color={COLORS.onSurface}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {list.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Aún no hay usuarios.</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={list}
+                keyExtractor={(item) => item.id}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                renderItem={({ item }) => (
+                  <View style={styles.userListItem}>
+                    <View style={styles.userInfoRow}>
+                      {item.avatar_url ? (
+                        <Image
+                          source={{ uri: item.avatar_url }}
+                          style={styles.userAvatarSm}
+                        />
+                      ) : (
+                        <View
+                          style={[
+                            styles.userAvatarSm,
+                            {
+                              backgroundColor: COLORS.surfaceVariant,
+                              justifyContent: "center",
+                              alignItems: "center",
+                            },
+                          ]}
+                        >
+                          <MaterialIcons
+                            name="person"
+                            size={20}
+                            color={COLORS.primary}
+                          />
+                        </View>
+                      )}
+                      <Text style={styles.userNameSm}>
+                        {item.full_name || item.username || "Usuario"}
+                      </Text>
+                    </View>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.modalFollowBtn,
+                        followingMap[item.id] ? styles.modalFollowingBtn : {},
+                      ]}
+                      onPress={() => handleFollowUser(item.id)}
+                    >
+                      <Text
+                        style={[
+                          styles.modalFollowBtnText,
+                          followingMap[item.id]
+                            ? { color: COLORS.onSurface }
+                            : {},
+                        ]}
+                      >
+                        {followingMap[item.id] ? "Siguiendo" : "Seguir"}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
+    );
   };
 
   if (loading) {
@@ -309,7 +517,9 @@ export default function ProfileScreen() {
             <View style={styles.aboutCard}>
               <Text style={styles.aboutLabel}>SOBRE MÍ</Text>
               <Text style={styles.aboutText}>
-                "{pet?.personality || "Sin descripción detallada por ahora."}"
+                &quot;
+                {pet?.personality || "Sin descripción detallada por ahora."}
+                &quot;
               </Text>
             </View>
 
@@ -336,61 +546,126 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Bento Grid Gallery (Estático de Ejemplo) */}
+        {/* Bento Grid Gallery */}
         <View style={styles.gallerySection}>
           <View style={styles.galleryHeader}>
             <Text style={styles.galleryTitle}>
               Momentos de {pet?.name || "tu mascota"}
             </Text>
-            <Text style={styles.gallerySubtitle}>3 fotos</Text>
+            <Text style={styles.gallerySubtitle}>
+              {posts.length} {posts.length === 1 ? "foto" : "fotos"}
+            </Text>
           </View>
 
-          <View style={styles.galleryGrid}>
-            <View style={styles.galleryItemLarge}>
-              <Image
-                source={{
-                  uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuCcMCmAiyPeR7G2XjLyeU_JRGEQmRo3AF4wwl_r0ZtvfqAqTr8DwZWMcxr0sRW0uuPklyIuDu2TttGvJYTw9cAlCRUibJ75E0qwFSR4RefrYN8w2WAF1xU2SogHBEk6ALvm7bo53g-IX-dz0-aCYS8Zw0qy5GkGcWcW5_c8IXu_2-qkIMva2yZNf0KSI9B8iSIr9mtqtXJ-qwcXXsp-DLB8Hs7BL9zNfU8g-sHzDi09W_X1396fEyqWRvTzMQRtMrej4j1MDSPQhhdD",
-                }}
-                style={styles.galleryImage}
-              />
-            </View>
-            <View style={styles.galleryColumnRight}>
-              <View style={styles.galleryItemSmall}>
+          {posts.length > 0 ? (
+            <View style={styles.galleryGrid}>
+              <View style={styles.galleryItemLarge}>
                 <Image
-                  source={{
-                    uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuDrkAMUkaSMdRqe5BSYX_QKYK1PwsJAQdXhWk294o6K77xqHun9rB6L9DvI1M99KScV2UXPS-4mjVEeatBdpfkNWRhK119whOJs49q3qvzgqTQ4cJTa3wVwO1hv2rxNlPX808ngO_n_jr9ohmxHBgCVFTR5gFVriRKckoDBbP2cK1FumQcVxSZIuexKns-QVJLQg_hPj6uk7Q0PKEnn_AsUSl6AUPEeHy6RyMvn5XRJLgaGCX2G3WchX-NFauVNrRyo5W0TX0odiTrX",
-                  }}
+                  source={{ uri: posts[0]?.image_url }}
                   style={styles.galleryImage}
                 />
               </View>
-              <View style={[styles.galleryItemSmall, { marginTop: 16 }]}>
-                <Image
-                  source={{
-                    uri: "https://lh3.googleusercontent.com/aida-public/AB6AXuASYUNuDQV018HwtPCNTG8azM-7CYlHfDoW9y8YJ57tnn_hjMV1kg7ZG_lFx7OciHfA2SQl8ygHMDi__MSMbqoJ4RigFdTn9NfbemEm-3IUX9xQ0L9gWQnftbizHhz-drXDWV7KkGDZTs_XU34oCywACHq0bh6U1xzV0edRTxOPAcFFIflopFk0UNwNEiRekfJyS6j2Rg763bo2tm1LZmTsUvpzNU53VEAMEL3nz8u7wgUhs_EP4KKO0aUE2nZq0c7zcgD6yiNqrn_z",
-                  }}
-                  style={styles.galleryImage}
-                />
-              </View>
+              {posts.length > 1 && (
+                <View style={styles.galleryColumnRight}>
+                  <View style={styles.galleryItemSmall}>
+                    <Image
+                      source={{ uri: posts[1]?.image_url }}
+                      style={styles.galleryImage}
+                    />
+                  </View>
+                  {posts.length > 2 && (
+                    <View style={[styles.galleryItemSmall, { marginTop: 16 }]}>
+                      <Image
+                        source={{ uri: posts[2]?.image_url }}
+                        style={styles.galleryImage}
+                      />
+                    </View>
+                  )}
+                </View>
+              )}
             </View>
-          </View>
+          ) : (
+            <View style={{ alignItems: "center", marginVertical: 40 }}>
+              <Text style={{ color: COLORS.onSurfaceVariant }}>
+                Aún no hay fotos.
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Stats Section */}
         <View style={styles.statsSection}>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>1.2k</Text>
+          <TouchableOpacity
+            style={styles.statCard}
+            onPress={() => openFollowModal("followers")}
+          >
+            <Text style={styles.statValue}>{followers.length}</Text>
             <Text style={styles.statLabel}>SEGUIDORES</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>850</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.statCard}
+            onPress={() => openFollowModal("following")}
+          >
+            <Text style={styles.statValue}>{following.length}</Text>
             <Text style={styles.statLabel}>AMIGOS</Text>
-          </View>
+          </TouchableOpacity>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>12</Text>
-            <Text style={styles.statLabel}>INSIGNIAS</Text>
+            <Text style={styles.statValue}>{posts.length}</Text>
+            <Text style={styles.statLabel}>PUBLICACIONES</Text>
           </View>
         </View>
       </ScrollView>
+
+      {/* Generic Alert Modal */}
+      {genericAlert && (
+        <Modal transparent animationType="fade" visible={true}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContentCentered}>
+              <Text style={styles.modalTitle}>{genericAlert.title}</Text>
+              <Text style={styles.modalText}>{genericAlert.message}</Text>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonPrimary]}
+                  onPress={() => setGenericAlert(null)}
+                >
+                  <Text style={styles.modalButtonTextPrimary}>OK</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {/* Confirm Action Modal */}
+      {confirmModal && (
+        <Modal transparent animationType="fade" visible={true}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContentCentered}>
+              <Text style={styles.modalTitle}>{confirmModal.title}</Text>
+              <Text style={styles.modalText}>{confirmModal.message}</Text>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonSecondary]}
+                  onPress={() => setConfirmModal(null)}
+                >
+                  <Text style={styles.modalButtonTextSecondary}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonDanger]}
+                  onPress={() => {
+                    confirmModal.onConfirm();
+                    setConfirmModal(null);
+                  }}
+                >
+                  <Text style={styles.modalButtonTextPrimary}>Confirmar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {renderFollowMenu()}
     </SafeAreaView>
   );
 }
@@ -674,5 +949,126 @@ const styles = StyleSheet.create({
     color: COLORS.onSurfaceVariant,
     textTransform: "uppercase",
     letterSpacing: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContentCentered: {
+    backgroundColor: COLORS.surfaceContainerLowest,
+    borderRadius: 24,
+    margin: 24,
+    padding: 24,
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: COLORS.surfaceContainerLowest,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    minHeight: "50%",
+    padding: 24,
+  },
+  modalText: {
+    fontSize: 16,
+    color: COLORS.onSurface,
+    textAlign: "center",
+    marginBottom: 20,
+    lineHeight: 24,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "center",
+    width: "100%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.surfaceVariant,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: COLORS.onSurface,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: 16,
+    color: COLORS.onSurfaceVariant,
+  },
+  userListItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  userInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  userAvatarSm: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+  },
+  userNameSm: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.onSurface,
+  },
+  modalFollowBtn: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  modalFollowingBtn: {
+    backgroundColor: COLORS.surfaceContainerHighest,
+  },
+  modalFollowBtnText: {
+    color: COLORS.onPrimary,
+    fontWeight: "bold",
+    fontSize: 14,
+  },
+  modalButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    minWidth: 100,
+    alignItems: "center",
+  },
+  modalButtonPrimary: {
+    backgroundColor: COLORS.primary,
+  },
+  modalButtonSecondary: {
+    backgroundColor: COLORS.surfaceContainerHighest,
+    marginRight: 10,
+  },
+  modalButtonDanger: {
+    backgroundColor: COLORS.danger,
+  },
+  modalButtonTextPrimary: {
+    color: COLORS.onPrimary,
+    fontWeight: "bold",
+    fontSize: 14,
+  },
+  modalButtonTextSecondary: {
+    color: COLORS.onSurface,
+    fontWeight: "bold",
+    fontSize: 14,
   },
 });

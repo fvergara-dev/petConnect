@@ -130,27 +130,7 @@ export default function FeedScreen() {
   };
 
   const handleDeletePost = (id: string, imageUrl: string) => {
-    if (Platform.OS === "web") {
-      const confirmDelete = window.confirm(
-        "¿Seguro que deseas eliminar esta publicación?",
-      );
-      if (confirmDelete) {
-        performDelete(id, imageUrl);
-      }
-    } else {
-      Alert.alert(
-        "Eliminar Post",
-        "¿Seguro que deseas eliminar esta publicación?",
-        [
-          { text: "Cancelar", style: "cancel" },
-          {
-            text: "Eliminar",
-            style: "destructive",
-            onPress: () => performDelete(id, imageUrl),
-          },
-        ],
-      );
-    }
+    performDelete(id, imageUrl);
   };
 
   const performDelete = async (id: string, imageUrl: string) => {

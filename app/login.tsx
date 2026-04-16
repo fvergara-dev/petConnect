@@ -3,7 +3,7 @@ import { Link, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
+  Modal,
   Platform,
   SafeAreaView,
   StyleSheet,
@@ -29,6 +29,10 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [genericAlert, setGenericAlert] = useState<{
+    title: string;
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -50,7 +54,10 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Por favor ingresa tu correo y contraseña.");
+      setGenericAlert({
+        title: "Error",
+        message: "Por favor ingresa tu correo y contraseña.",
+      });
       return;
     }
 
@@ -62,7 +69,10 @@ export default function LoginScreen() {
     setLoading(false);
 
     if (error) {
-      Alert.alert("Error al iniciar sesión", error.message);
+      setGenericAlert({
+        title: "Error al iniciar sesión",
+        message: error.message,
+      });
     } else {
       router.replace("/(tabs)");
     }
@@ -129,6 +139,26 @@ export default function LoginScreen() {
           </Link>
         </View>
       </View>
+
+      {/* Generic Alert Modal */}
+      {genericAlert && (
+        <Modal transparent animationType="fade" visible={true}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContentCentered}>
+              <Text style={styles.modalTitle}>{genericAlert.title}</Text>
+              <Text style={styles.modalText}>{genericAlert.message}</Text>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonPrimary]}
+                  onPress={() => setGenericAlert(null)}
+                >
+                  <Text style={styles.modalButtonTextPrimary}>OK</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
@@ -238,5 +268,51 @@ const styles = StyleSheet.create({
     color: COLORS.linkBlue,
     fontSize: 15,
     fontWeight: "bold",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+  },
+  modalContentCentered: {
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
+    margin: 24,
+    padding: 24,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: COLORS.primaryText,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  modalText: {
+    fontSize: 16,
+    color: COLORS.secondaryText,
+    textAlign: "center",
+    marginBottom: 20,
+    lineHeight: 24,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "center",
+    width: "100%",
+  },
+  modalButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    minWidth: 100,
+    alignItems: "center",
+  },
+  modalButtonPrimary: {
+    backgroundColor: COLORS.buttonBg,
+  },
+  modalButtonTextPrimary: {
+    color: "#FFF",
+    fontWeight: "bold",
+    fontSize: 14,
   },
 });
