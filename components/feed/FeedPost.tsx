@@ -1,7 +1,6 @@
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
   FlatList,
   Image,
   KeyboardAvoidingView,
@@ -11,7 +10,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { supabase } from "../../lib/supabase";
 
@@ -24,6 +23,7 @@ export default function FeedPost({
   onDelete?: () => void;
   onEdit?: () => void;
 }) {
+  // Likes
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(parseInt(post.likes) || 0);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -115,6 +115,19 @@ export default function FeedPost({
           .from("likes")
           .insert({ user_id: user.id, post_id: post.id });
         if (likeError) throw likeError;
+
+        if (post.authorId && post.authorId !== user.id) {
+          const { error: notifError } = await supabase
+            .from("notifications")
+            .insert({
+              user_id: post.authorId,
+              actor_id: user.id,
+              type: "like",
+              post_id: post.id,
+            });
+          if (notifError)
+            console.error("Error trigger like notification:", notifError);
+        }
       } else {
         // Remover el like
         const { error: unlikeError } = await supabase
@@ -255,6 +268,19 @@ export default function FeedPost({
         .single();
 
       if (error) throw error;
+
+      if (post.authorId && post.authorId !== user.id) {
+        const { error: notifError } = await supabase
+          .from("notifications")
+          .insert({
+            user_id: post.authorId,
+            actor_id: user.id,
+            type: "comment",
+            post_id: post.id,
+          });
+        if (notifError)
+          console.error("Error trigger comment notification:", notifError);
+      }
 
       setCommentText("");
       // Fetch new comments fully to get user data mappings easily
@@ -701,11 +727,16 @@ export default function FeedPost({
             <TouchableOpacity
               onPress={() => {
                 if (Platform.OS === "web") {
-                  window.alert(
-                    "¡La función de compartir estará disponible pronto!",
-                  );
+                  setGenericAlert({
+                    title: "Error",
+                    message:
+                      "¡La función de compartir estará disponible pronto!",
+                  });
                 } else {
-                  Alert.alert("Compartir", "Función en desarrollo");
+                  setGenericAlert({
+                    title: "Error",
+                    message: "Compartir, Función en desarrollo",
+                  });
                 }
               }}
             >

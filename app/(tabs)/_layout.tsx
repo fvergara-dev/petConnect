@@ -14,7 +14,6 @@ export default function TabLayout() {
 
         // --- LA SOLUCIÓN DEFINITIVA A LA SUPERPOSICIÓN VIRTUAL ---
         // 1. Elimina el padding invisible que reserva React Navigation para la SafeArea y el texto label
-        safeAreaInsets: { bottom: 0, top: 0, left: 0, right: 0 },
         tabBarItemStyle: {
           flex: 1,
           justifyContent: "center",
@@ -70,6 +69,23 @@ export default function TabLayout() {
               <FontAwesome5
                 name="plus-square"
                 size={22}
+                color={focused ? "#FFFFFF" : "#8A5A19"}
+                solid={focused}
+              />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <View
+              style={[styles.iconContainer, focused && styles.activeBackground]}
+            >
+              <FontAwesome5
+                name="bell"
+                size={20}
                 color={focused ? "#FFFFFF" : "#8A5A19"}
                 solid={focused}
               />

@@ -1,5 +1,5 @@
 import { FontAwesome5 } from "@expo/vector-icons";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -19,10 +19,12 @@ import { supabase } from "../../lib/supabase";
 const CATEGORIES = ["Todos", "Perros", "Gatos", "Aves", "Exóticos"];
 
 export default function ExploreScreen() {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState("Todos");
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestedAccounts, setSuggestedAccounts] = useState<any[]>([]);
   const [explorePosts, setExplorePosts] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -115,7 +117,115 @@ export default function ExploreScreen() {
     }
   };
 
+  const handleSearchQuery = async (query: string) => {
+    setLoadingAccounts(true);
+    setLoadingPosts(true);
+
+    try {
+      // 1. Buscar perfiles (nombre o username)
+      const { data: matchedProfiles } = await supabase
+        .from("profiles")
+        .select("id")
+        .or(`full_name.ilike.%${query}%,username.ilike.%${query}%`);
+
+      // 2. Buscar mascotas (nombre o raza o especie)
+      const { data: matchedPets } = await supabase
+        .from("pets")
+        .select("owner_id")
+        .or(
+          `name.ilike.%${query}%,breed.ilike.%${query}%,species.ilike.%${query}%`,
+        );
+
+      const profileIds = new Set<string>();
+      if (matchedProfiles) matchedProfiles.forEach((p) => profileIds.add(p.id));
+      if (matchedPets) matchedPets.forEach((p) => profileIds.add(p.owner_id));
+
+      const matchedUserIds = Array.from(profileIds);
+
+      if (matchedUserIds.length === 0) {
+        setSuggestedAccounts([]);
+        setExplorePosts([]);
+        setLoadingAccounts(false);
+        setLoadingPosts(false);
+        return;
+      }
+
+      // Si el usuario actual está en la búsqueda, podemos incluirlo o no (decidimos no mostrarlo en accounts, pero sí en posts)
+      const filteredAccountIds = currentUserId
+        ? matchedUserIds.filter((id) => id !== currentUserId)
+        : matchedUserIds;
+
+      // Obtener perfiles para "Cuentas sugeridas" de los resultados de búsqueda
+      if (filteredAccountIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("*")
+          .in("id", filteredAccountIds)
+          .limit(10);
+
+        if (profilesData) {
+          const suggested = [];
+          for (const profile of profilesData) {
+            const { data: pets } = await supabase
+              .from("pets")
+              .select("name, breed, species")
+              .eq("owner_id", profile.id)
+              .limit(1);
+
+            const petData = pets && pets.length > 0 ? pets[0] : null;
+
+            suggested.push({
+              id: profile.id,
+              name: profile.full_name || profile.username || "Usuario",
+              breed: petData
+                ? `${petData.name ? petData.name + " - " : ""}${petData.breed || petData.species || ""}`
+                : "Sin mascota",
+              image:
+                profile.avatar_url ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  profile.full_name || profile.username || "User",
+                )}&background=F0EBE1&color=8A5A19`,
+            });
+          }
+          setSuggestedAccounts(suggested);
+        }
+      } else {
+        setSuggestedAccounts([]);
+      }
+
+      // Obtener posts para esos mismos usuarios en la sección "Explorar comunidad"
+      const { data: postsData } = await supabase
+        .from("posts")
+        .select("id, image_url, likes")
+        .in("author_id", matchedUserIds)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (postsData) {
+        setExplorePosts(
+          postsData.map((p, i) => ({
+            ...p,
+            height: 200 + Math.random() * 80, // Mantener masonry
+          })),
+        );
+      } else {
+        setExplorePosts([]);
+      }
+    } catch (err) {
+      console.warn("Error en la búsqueda:", err);
+    } finally {
+      setLoadingAccounts(false);
+      setLoadingPosts(false);
+    }
+  };
+
   const fetchPostsForCategory = async (category: string, search: string) => {
+    if (search.trim() !== "") {
+      // Si hay una búsqueda de texto, redirigimos la lógica a la búsqueda completa
+      handleSearchQuery(search);
+      return;
+    }
+
     setLoadingPosts(true);
     try {
       let allowedOwnerIds: string[] | null = null;
@@ -171,12 +281,65 @@ export default function ExploreScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchExploreData();
+
+      let isMounted = true;
+      let subscription: any = null;
+
+      const fetchUnread = async () => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user || !isMounted) return;
+
+        const { count, error } = await supabase
+          .from("notifications")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("read", false);
+
+        if (!error && isMounted) {
+          setUnreadCount(count || 0);
+        }
+
+        if (isMounted) {
+          subscription = supabase
+            .channel(`explore:notifications:${user.id}`)
+            .on(
+              "postgres_changes",
+              {
+                event: "INSERT",
+                schema: "public",
+                table: "notifications",
+                filter: `user_id=eq.${user.id}`,
+              },
+              () => {
+                if (isMounted) setUnreadCount((prev) => prev + 1);
+              },
+            )
+            .subscribe();
+        }
+      };
+
+      fetchUnread();
+
+      return () => {
+        isMounted = false;
+        if (subscription) {
+          supabase.removeChannel(subscription);
+        }
+      };
     }, []),
   );
 
   const handleCategoryPress = (category: string) => {
     setActiveCategory(category);
-    fetchPostsForCategory(category, searchQuery);
+    // Si hay una búsqueda activa, mejor limpiarla para ver la categoría real
+    if (searchQuery.trim() !== "") {
+      setSearchQuery("");
+      fetchPostsForCategory(category, "");
+    } else {
+      fetchPostsForCategory(category, searchQuery);
+    }
   };
 
   const handleFollow = async (accountId: string) => {
@@ -199,13 +362,22 @@ export default function ExploreScreen() {
           .from("follows")
           .insert({ follower_id: currentUserId, following_id: accountId });
         if (error) throw error;
-      }
 
-      // Remove from suggested if we just started following them
-      if (!isFollowing) {
-        setSuggestedAccounts((prev) =>
-          prev.filter((acc) => acc.id !== accountId),
-        );
+        // Insertar la notificacion de follow:
+        if (currentUserId !== accountId) {
+          const { error: notifError } = await supabase
+            .from("notifications")
+            .insert({
+              user_id: accountId,
+              actor_id: currentUserId,
+              type: "follow",
+            });
+          if (notifError)
+            console.error(
+              "Error trigger explore follow notification:",
+              notifError,
+            );
+        }
       }
     } catch (e) {
       console.warn("Error following", e);
@@ -232,8 +404,12 @@ export default function ExploreScreen() {
             </View>
             <Text style={styles.headerTitle}>Explorar</Text>
           </View>
-          <TouchableOpacity style={styles.notificationBtn}>
+          <TouchableOpacity
+            style={styles.notificationBtn}
+            onPress={() => router.push("/(tabs)/notifications")}
+          >
             <FontAwesome5 name="bell" size={22} color="#8A5A19" solid />
+            {unreadCount > 0 && <View style={styles.badge} />}
           </TouchableOpacity>
         </Animated.View>
 
@@ -260,10 +436,20 @@ export default function ExploreScreen() {
               placeholder="Busca mascotas o amigos..."
               placeholderTextColor="#B08D6A"
               value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={() =>
-                fetchPostsForCategory(activeCategory, searchQuery)
-              }
+              onChangeText={(text) => {
+                setSearchQuery(text);
+                if (text.trim() === "") {
+                  // Volver al estado inicial si se borra el texto
+                  fetchExploreData();
+                }
+              }}
+              onSubmitEditing={() => {
+                if (searchQuery.trim() !== "") {
+                  handleSearchQuery(searchQuery);
+                } else {
+                  fetchExploreData();
+                }
+              }}
             />
           </Animated.View>
 
@@ -496,6 +682,18 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
+    position: "relative",
+  },
+  badge: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: "#FAF7F2", // mask background
+    backgroundColor: "#C84D3B",
   },
   searchContainer: {
     flexDirection: "row",

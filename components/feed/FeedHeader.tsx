@@ -1,10 +1,14 @@
 import { FontAwesome5 } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { supabase } from "../../lib/supabase";
 
 export default function FeedHeader() {
+  const router = useRouter();
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -24,11 +28,66 @@ export default function FeedHeader() {
       }
     };
     fetchAvatar();
-
     return () => {
       isMounted = false;
     };
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      let isMounted = true;
+      let userId: string | null = null;
+      let subscription: any = null;
+
+      const fetchUnread = async () => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user || !isMounted) return;
+        userId = user.id;
+
+        const { count, error } = await supabase
+          .from("notifications")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("read", false);
+
+        if (!error && isMounted) {
+          setUnreadCount(count || 0);
+        }
+
+        // Suscribirse a nuevas notificaciones en tiempo real
+        if (isMounted) {
+          subscription = supabase
+            .channel(`public:notifications:user_id=eq.${user.id}`)
+            .on(
+              "postgres_changes",
+              {
+                event: "INSERT",
+                schema: "public",
+                table: "notifications",
+                filter: `user_id=eq.${user.id}`,
+              },
+              () => {
+                if (isMounted) {
+                  setUnreadCount((prev) => prev + 1);
+                }
+              },
+            )
+            .subscribe();
+        }
+      };
+
+      fetchUnread();
+
+      return () => {
+        isMounted = false;
+        if (subscription) {
+          supabase.removeChannel(subscription);
+        }
+      };
+    }, []),
+  );
 
   return (
     <View style={styles.headerContainer}>
@@ -43,9 +102,12 @@ export default function FeedHeader() {
         />
         <Text style={styles.headerTitle}>PetConnect</Text>
       </View>
-      <TouchableOpacity style={styles.notificationBtn}>
+      <TouchableOpacity
+        style={styles.notificationBtn}
+        onPress={() => router.push("/(tabs)/notifications")}
+      >
         <FontAwesome5 name="bell" size={22} color="#4A2A14" solid />
-        <View style={styles.badge} />
+        {unreadCount > 0 && <View style={styles.badge} />}
       </TouchableOpacity>
     </View>
   );
@@ -69,8 +131,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 10,
-    borderWidth: 2,
-    borderColor: "#4A2A14", // Match the brown outline from design
+    borderWidth: 1,
+    borderColor: "#4A2A14",
   },
   headerTitle: {
     fontSize: 24,

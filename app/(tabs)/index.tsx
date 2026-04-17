@@ -1,7 +1,7 @@
 import FeedHeader from "@/components/feed/FeedHeader";
 import FeedPost from "@/components/feed/FeedPost";
 import Stories from "@/components/feed/Stories";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -21,7 +21,6 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { supabase } from "../../lib/supabase";
 
 export default function FeedScreen() {
-  const router = useRouter();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

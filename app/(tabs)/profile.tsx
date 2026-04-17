@@ -13,6 +13,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -65,6 +66,15 @@ export default function ProfileScreen() {
     message: string;
     onConfirm: () => void;
   } | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    breed: "",
+    personality: "",
+  });
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // Como esta es la pestaña "Mi Perfil", es isMyProfile = true
   const isMyProfile = true;
@@ -72,6 +82,53 @@ export default function ProfileScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchProfileData();
+
+      let isMounted = true;
+      let subscription: any = null;
+      let userId: string | null = null;
+
+      const fetchUnread = async () => {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user || !isMounted) return;
+        userId = user.id;
+
+        const { count, error } = await supabase
+          .from("notifications")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .eq("read", false);
+
+        if (!error && isMounted) {
+          setUnreadCount(count || 0);
+        }
+
+        if (isMounted) {
+          subscription = supabase
+            .channel(`profile:notifications:${user.id}`)
+            .on(
+              "postgres_changes",
+              {
+                event: "INSERT",
+                schema: "public",
+                table: "notifications",
+                filter: `user_id=eq.${user.id}`,
+              },
+              () => {
+                if (isMounted) setUnreadCount((prev) => prev + 1);
+              },
+            )
+            .subscribe();
+        }
+      };
+
+      fetchUnread();
+
+      return () => {
+        isMounted = false;
+        if (subscription) supabase.removeChannel(subscription);
+      };
     }, []),
   );
 
@@ -283,6 +340,73 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleOpenEditModal = () => {
+    setEditForm({
+      name: pet?.name || "",
+      breed: pet?.breed || "",
+      personality: pet?.personality || "",
+    });
+    setEditModalVisible(true);
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setSavingEdit(true);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("No hay usuario autenticado.");
+
+      let updatedPet;
+      if (pet?.id) {
+        // Update existing pet
+        const { data, error } = await supabase
+          .from("pets")
+          .update({
+            name: editForm.name,
+            breed: editForm.breed,
+            personality: editForm.personality,
+          })
+          .eq("id", pet.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        updatedPet = data;
+      } else {
+        // Insert new pet
+        const { data, error } = await supabase
+          .from("pets")
+          .insert({
+            owner_id: user.id,
+            name: editForm.name,
+            breed: editForm.breed,
+            species: "Perro",
+            personality: editForm.personality,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        updatedPet = data;
+      }
+
+      setPet(updatedPet);
+      setEditModalVisible(false);
+      setGenericAlert({
+        title: "¡Perfil Actualizado!",
+        message: "Los datos de la mascota se guardaron correctamente.",
+      });
+    } catch (error: any) {
+      setGenericAlert({
+        title: "Error guardando",
+        message: error.message,
+      });
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const handleFollowUser = async (accountId: string) => {
     try {
       const {
@@ -307,6 +431,16 @@ export default function ProfileScreen() {
         await supabase
           .from("follows")
           .insert({ follower_id: user.id, following_id: accountId });
+
+        const { error: notifError } = await supabase
+          .from("notifications")
+          .insert({
+            user_id: accountId,
+            actor_id: user.id,
+            type: "follow",
+          });
+        if (notifError)
+          console.error("Error trigger follow notification:", notifError);
 
         // Fetch the user data again minimally to add to 'following' list
         const { data: newFollowing, error: nfError } = await supabase
@@ -444,12 +578,16 @@ export default function ProfileScreen() {
           </TouchableOpacity>
           <Text style={styles.appBarTitle}>PetConnect</Text>
         </View>
-        <TouchableOpacity style={styles.notificationButton}>
+        <TouchableOpacity
+          style={styles.notificationButton}
+          onPress={() => router.push("/(tabs)/notifications")}
+        >
           <MaterialIcons
             name="notifications"
             size={24}
             color={COLORS.primary}
           />
+          {unreadCount > 0 && <View style={styles.badge} />}
         </TouchableOpacity>
       </View>
 
@@ -494,10 +632,6 @@ export default function ProfileScreen() {
                 <ActivityIndicator size="large" color="#fff" />
               </View>
             )}
-
-            <View style={styles.badgeAdoptado}>
-              <Text style={styles.badgeAdoptadoText}>Adoptado</Text>
-            </View>
           </TouchableOpacity>
 
           <View style={styles.petInfoContainer}>
@@ -508,9 +642,6 @@ export default function ProfileScreen() {
                 <Text style={styles.chipBlueText}>
                   {pet?.breed || "Raza desconocida"}
                 </Text>
-              </View>
-              <View style={styles.chipYellow}>
-                <Text style={styles.chipYellowText}>2 años</Text>
               </View>
             </View>
 
@@ -524,7 +655,7 @@ export default function ProfileScreen() {
             </View>
 
             {/* Condicionar Botones: Solo si no es Mi Perfil */}
-            {!isMyProfile && (
+            {!isMyProfile ? (
               <View style={styles.actionButtonsRow}>
                 <TouchableOpacity style={styles.followButton}>
                   <MaterialIcons
@@ -540,6 +671,30 @@ export default function ProfileScreen() {
                     size={24}
                     color={COLORS.onSurface}
                   />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.actionButtonsRow}>
+                <TouchableOpacity
+                  style={[
+                    styles.followButton,
+                    { backgroundColor: COLORS.surfaceContainerHighest },
+                  ]}
+                  onPress={handleOpenEditModal}
+                >
+                  <FontAwesome5
+                    name="edit"
+                    size={16}
+                    color={COLORS.onSurface}
+                  />
+                  <Text
+                    style={[
+                      styles.followButtonText,
+                      { color: COLORS.onSurface },
+                    ]}
+                  >
+                    Editar Perfil y Mascota
+                  </Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -665,6 +820,86 @@ export default function ProfileScreen() {
         </Modal>
       )}
 
+      {/* Modal para Editar Mascota */}
+      {editModalVisible && (
+        <Modal
+          transparent
+          animationType="slide"
+          visible={true}
+          onRequestClose={() => setEditModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContentCentered, { width: "90%" }]}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Editar Mascota</Text>
+                <TouchableOpacity onPress={() => setEditModalVisible(false)}>
+                  <MaterialIcons
+                    name="close"
+                    size={24}
+                    color={COLORS.onSurface}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Nombre</Text>
+                <TextInput
+                  style={styles.editInput}
+                  value={editForm.name}
+                  onChangeText={(t) => setEditForm({ ...editForm, name: t })}
+                  placeholder="Ej. Max"
+                  placeholderTextColor={COLORS.onSurfaceVariant}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Raza</Text>
+                <TextInput
+                  style={styles.editInput}
+                  value={editForm.breed}
+                  onChangeText={(t) => setEditForm({ ...editForm, breed: t })}
+                  placeholder="Ej. Bulldog"
+                  placeholderTextColor={COLORS.onSurfaceVariant}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Sobre Mí</Text>
+                <TextInput
+                  style={[
+                    styles.editInput,
+                    { height: 80, textAlignVertical: "top" },
+                  ]}
+                  value={editForm.personality}
+                  onChangeText={(t) =>
+                    setEditForm({ ...editForm, personality: t })
+                  }
+                  placeholder="Describe a tu mascota..."
+                  placeholderTextColor={COLORS.onSurfaceVariant}
+                  multiline
+                />
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonPrimary]}
+                  onPress={handleSaveProfile}
+                  disabled={savingEdit}
+                >
+                  {savingEdit ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <Text style={styles.modalButtonTextPrimary}>
+                      Guardar Perfil
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+
       {renderFollowMenu()}
     </SafeAreaView>
   );
@@ -715,6 +950,18 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
+    position: "relative",
+  },
+  badge: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: "#FAF7F2", // mask background
+    backgroundColor: "#C84D3B",
   },
   // Hero Section
   heroSection: {
@@ -754,26 +1001,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 24,
-  },
-  badgeAdoptado: {
-    position: "absolute",
-    bottom: -16,
-    right: -16,
-    backgroundColor: COLORS.tertiaryContainer,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 16,
-    transform: [{ rotate: "3deg" }],
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  badgeAdoptadoText: {
-    color: COLORS.onTertiaryContainer,
-    fontWeight: "bold",
-    fontSize: 16,
   },
   removeAvatarButton: {
     position: "absolute",
@@ -980,6 +1207,26 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
     lineHeight: 24,
+  },
+  inputContainer: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: COLORS.onSurfaceVariant,
+    marginBottom: 8,
+  },
+  editInput: {
+    backgroundColor: COLORS.surfaceContainerLow,
+    color: COLORS.onSurface,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceVariant,
   },
   modalButtons: {
     flexDirection: "row",

@@ -5,9 +5,9 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -28,6 +28,9 @@ const COLORS = {
   surfaceContainer: "#ffebd4",
   onSurfaceVariant: "#7b5925",
   danger: "#aa371c",
+  buttonBg: "#8A5A19",
+  primaryText: "#4A2A14",
+  secondaryText: "#7A6451",
 };
 
 export default function NewPostScreen() {
@@ -36,6 +39,10 @@ export default function NewPostScreen() {
   const [image, setImage] = useState<string | null>(null);
   const [base64, setBase64] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [genericAlert, setGenericAlert] = useState<{
+    title: string;
+    message: string;
+  } | null>(null);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -48,7 +55,7 @@ export default function NewPostScreen() {
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       setImage(result.assets[0].uri);
-      setBase64(result.assets[0].base64);
+      setBase64(result.assets[0].base64 || null);
     }
   };
 
@@ -59,10 +66,10 @@ export default function NewPostScreen() {
 
   const handlePost = async () => {
     if (!caption.trim() && !image) {
-      Alert.alert(
-        "Error",
-        "Debes agregar una foto o escribir algo para tu post.",
-      );
+      setGenericAlert({
+        title: "Error",
+        message: "Debes agregar una foto o escribir algo para tu post",
+      });
       return;
     }
 
@@ -101,16 +108,14 @@ export default function NewPostScreen() {
 
       if (insertError) throw insertError;
 
-      Alert.alert("¡Éxito!", "Tu post ha sido publicado.");
       setCaption("");
       removeImage();
       router.replace("/(tabs)");
     } catch (error: any) {
-      if (Platform.OS === "web") {
-        window.alert(error.message);
-      } else {
-        Alert.alert("Error al publicar", error.message);
-      }
+      setGenericAlert({
+        title: "Error al crear post",
+        message: error.message || "Ocurrió un error inesperado.",
+      });
     } finally {
       setLoading(false);
     }
@@ -169,6 +174,25 @@ export default function NewPostScreen() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+      {/* Generic Alert Modal */}
+      {genericAlert && (
+        <Modal transparent animationType="fade" visible={true}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContentCentered}>
+              <Text style={styles.modalTitle}>{genericAlert.title}</Text>
+              <Text style={styles.modalText}>{genericAlert.message}</Text>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonPrimary]}
+                  onPress={() => setGenericAlert(null)}
+                >
+                  <Text style={styles.modalButtonTextPrimary}>OK</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
@@ -256,5 +280,51 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.6)",
     padding: 8,
     borderRadius: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+  },
+  modalContentCentered: {
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
+    margin: 24,
+    padding: 24,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: COLORS.primaryText,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  modalText: {
+    fontSize: 16,
+    color: COLORS.secondaryText,
+    textAlign: "center",
+    marginBottom: 20,
+    lineHeight: 24,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "center",
+    width: "100%",
+  },
+  modalButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    minWidth: 100,
+    alignItems: "center",
+  },
+  modalButtonPrimary: {
+    backgroundColor: COLORS.buttonBg,
+  },
+  modalButtonTextPrimary: {
+    color: "#FFF",
+    fontWeight: "bold",
+    fontSize: 14,
   },
 });
