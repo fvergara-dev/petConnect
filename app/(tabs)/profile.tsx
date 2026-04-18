@@ -1,3 +1,4 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { decode } from "base64-arraybuffer";
 import * as ImagePicker from "expo-image-picker";
@@ -75,6 +76,14 @@ export default function ProfileScreen() {
     personality: "",
   });
   const [savingEdit, setSavingEdit] = useState(false);
+
+  // Dynamic Theme Colors
+  const backgroundColor = useThemeColor({}, "background");
+  const tintColor = useThemeColor({}, "tint");
+  const textColor = useThemeColor({}, "text");
+  const cardColor = useThemeColor({}, "card");
+  const iconColor = useThemeColor({}, "icon");
+  const borderColor = useThemeColor({}, "border");
 
   // Como esta es la pestaña "Mi Perfil", es isMyProfile = true
   const isMyProfile = true;
@@ -478,23 +487,26 @@ export default function ProfileScreen() {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
+          <View style={[styles.modalContent, { backgroundColor: cardColor }]}>
+            <View
+              style={[
+                styles.modalHeader,
+                { borderBottomColor: backgroundColor },
+              ]}
+            >
+              <Text style={[styles.modalTitle, { color: textColor }]}>
                 {modalType === "followers" ? "Seguidores" : "Seguidos"}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <MaterialIcons
-                  name="close"
-                  size={24}
-                  color={COLORS.onSurface}
-                />
+                <MaterialIcons name="close" size={24} color={iconColor} />
               </TouchableOpacity>
             </View>
 
             {list.length === 0 ? (
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>Aún no hay usuarios.</Text>
+                <Text style={[styles.emptyText, { color: textColor }]}>
+                  Aún no hay usuarios.
+                </Text>
               </View>
             ) : (
               <FlatList
@@ -514,7 +526,7 @@ export default function ProfileScreen() {
                           style={[
                             styles.userAvatarSm,
                             {
-                              backgroundColor: COLORS.surfaceVariant,
+                              backgroundColor: backgroundColor,
                               justifyContent: "center",
                               alignItems: "center",
                             },
@@ -523,11 +535,11 @@ export default function ProfileScreen() {
                           <MaterialIcons
                             name="person"
                             size={20}
-                            color={COLORS.primary}
+                            color={tintColor}
                           />
                         </View>
                       )}
-                      <Text style={styles.userNameSm}>
+                      <Text style={[styles.userNameSm, { color: textColor }]}>
                         {item.full_name || item.username || "Usuario"}
                       </Text>
                     </View>
@@ -535,7 +547,9 @@ export default function ProfileScreen() {
                     <TouchableOpacity
                       style={[
                         styles.modalFollowBtn,
-                        followingMap[item.id] ? styles.modalFollowingBtn : {},
+                        followingMap[item.id]
+                          ? { backgroundColor: backgroundColor }
+                          : { backgroundColor: tintColor },
                       ]}
                       onPress={() => handleFollowUser(item.id)}
                     >
@@ -543,8 +557,8 @@ export default function ProfileScreen() {
                         style={[
                           styles.modalFollowBtnText,
                           followingMap[item.id]
-                            ? { color: COLORS.onSurface }
-                            : {},
+                            ? { color: textColor }
+                            : { color: backgroundColor },
                         ]}
                       >
                         {followingMap[item.id] ? "Siguiendo" : "Seguir"}
@@ -562,32 +576,34 @@ export default function ProfileScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.safeArea, { justifyContent: "center" }]}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
+      <SafeAreaView
+        style={[styles.safeArea, { justifyContent: "center", backgroundColor }]}
+      >
+        <ActivityIndicator size="large" color={tintColor} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
       {/* Top AppBar */}
-      <View style={styles.appBar}>
+      <View style={[styles.appBar, { backgroundColor }]}>
         <View style={styles.appBarLeft}>
           <TouchableOpacity onPress={confirmLogout} style={styles.appBarAvatar}>
             <FontAwesome5 name="sign-out-alt" size={16} color={COLORS.danger} />
           </TouchableOpacity>
-          <Text style={styles.appBarTitle}>PetConnect</Text>
+          <Text style={[styles.appBarTitle, { color: textColor }]}>
+            PetConnect
+          </Text>
         </View>
         <TouchableOpacity
           style={styles.notificationButton}
           onPress={() => router.push("/(tabs)/notifications")}
         >
-          <MaterialIcons
-            name="notifications"
-            size={24}
-            color={COLORS.primary}
-          />
-          {unreadCount > 0 && <View style={styles.badge} />}
+          <MaterialIcons name="notifications" size={24} color={iconColor} />
+          {unreadCount > 0 && (
+            <View style={[styles.badge, { borderColor: backgroundColor }]} />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -596,9 +612,9 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Profile Hero Section */}
-        <View style={styles.heroSection}>
+        <View style={[styles.heroSection, { backgroundColor }]}>
           <TouchableOpacity
-            style={styles.mainImageContainer}
+            style={[styles.mainImageContainer, { borderColor: tintColor }]}
             onPress={changeAvatar}
             disabled={uploading}
             activeOpacity={0.8}
@@ -609,9 +625,15 @@ export default function ProfileScreen() {
                 style={styles.mainImage}
               />
             ) : (
-              <View style={[styles.mainImage, styles.placeholderImage]}>
-                <FontAwesome5 name="camera" size={40} color={COLORS.primary} />
-                <Text style={styles.placeholderText}>
+              <View
+                style={[
+                  styles.mainImage,
+                  styles.placeholderImage,
+                  { backgroundColor: cardColor },
+                ]}
+              >
+                <FontAwesome5 name="camera" size={40} color={tintColor} />
+                <Text style={[styles.placeholderText, { color: iconColor }]}>
                   Toca para añadir foto
                 </Text>
               </View>
@@ -619,7 +641,10 @@ export default function ProfileScreen() {
 
             {profile?.avatar_url && isMyProfile && (
               <TouchableOpacity
-                style={styles.removeAvatarButton}
+                style={[
+                  styles.removeAvatarButton,
+                  { backgroundColor: COLORS.danger },
+                ]}
                 onPress={removeAvatar}
                 disabled={uploading}
               >
@@ -628,26 +653,41 @@ export default function ProfileScreen() {
             )}
 
             {uploading && (
-              <View style={styles.uploadingOverlay}>
-                <ActivityIndicator size="large" color="#fff" />
+              <View
+                style={[
+                  styles.uploadingOverlay,
+                  { backgroundColor: backgroundColor + "aa" },
+                ]}
+              >
+                <ActivityIndicator size="large" color={tintColor} />
               </View>
             )}
           </TouchableOpacity>
 
-          <View style={styles.petInfoContainer}>
-            <Text style={styles.petName}>{pet?.name || "Sin nombre"}</Text>
+          <View
+            style={[styles.petInfoContainer, { backgroundColor: cardColor }]}
+          >
+            <Text style={[styles.petName, { color: textColor }]}>
+              {pet?.name || "Sin nombre"}
+            </Text>
 
             <View style={styles.chipsRow}>
-              <View style={styles.chipBlue}>
-                <Text style={styles.chipBlueText}>
+              <View
+                style={[styles.chipBlue, { backgroundColor: tintColor + "40" }]}
+              >
+                <Text style={[styles.chipBlueText, { color: textColor }]}>
                   {pet?.breed || "Raza desconocida"}
                 </Text>
               </View>
             </View>
 
-            <View style={styles.aboutCard}>
-              <Text style={styles.aboutLabel}>SOBRE MÍ</Text>
-              <Text style={styles.aboutText}>
+            <View
+              style={[styles.aboutCard, { backgroundColor: backgroundColor }]}
+            >
+              <Text style={[styles.aboutLabel, { color: iconColor }]}>
+                SOBRE MÍ
+              </Text>
+              <Text style={[styles.aboutText, { color: textColor }]}>
                 &quot;
                 {pet?.personality || "Sin descripción detallada por ahora."}
                 &quot;
@@ -657,20 +697,21 @@ export default function ProfileScreen() {
             {/* Condicionar Botones: Solo si no es Mi Perfil */}
             {!isMyProfile ? (
               <View style={styles.actionButtonsRow}>
-                <TouchableOpacity style={styles.followButton}>
-                  <MaterialIcons
-                    name="favorite"
-                    size={20}
-                    color={COLORS.onPrimary}
-                  />
-                  <Text style={styles.followButtonText}>Seguir</Text>
+                <TouchableOpacity
+                  style={[styles.followButton, { backgroundColor: tintColor }]}
+                >
+                  <MaterialIcons name="favorite" size={20} color="#FFF" />
+                  <Text style={[styles.followButtonText, { color: "#FFF" }]}>
+                    Seguir
+                  </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.shareButton}>
-                  <MaterialIcons
-                    name="share"
-                    size={24}
-                    color={COLORS.onSurface}
-                  />
+                <TouchableOpacity
+                  style={[
+                    styles.shareButton,
+                    { backgroundColor: cardColor, borderColor: tintColor },
+                  ]}
+                >
+                  <MaterialIcons name="share" size={24} color={tintColor} />
                 </TouchableOpacity>
               </View>
             ) : (
@@ -678,21 +719,12 @@ export default function ProfileScreen() {
                 <TouchableOpacity
                   style={[
                     styles.followButton,
-                    { backgroundColor: COLORS.surfaceContainerHighest },
+                    { backgroundColor: tintColor + "20" },
                   ]}
                   onPress={handleOpenEditModal}
                 >
-                  <FontAwesome5
-                    name="edit"
-                    size={16}
-                    color={COLORS.onSurface}
-                  />
-                  <Text
-                    style={[
-                      styles.followButtonText,
-                      { color: COLORS.onSurface },
-                    ]}
-                  >
+                  <FontAwesome5 name="edit" size={16} color={tintColor} />
+                  <Text style={[styles.followButtonText, { color: tintColor }]}>
                     Editar Perfil y Mascota
                   </Text>
                 </TouchableOpacity>
@@ -704,10 +736,10 @@ export default function ProfileScreen() {
         {/* Bento Grid Gallery */}
         <View style={styles.gallerySection}>
           <View style={styles.galleryHeader}>
-            <Text style={styles.galleryTitle}>
+            <Text style={[styles.galleryTitle, { color: textColor }]}>
               Momentos de {pet?.name || "tu mascota"}
             </Text>
-            <Text style={styles.gallerySubtitle}>
+            <Text style={[styles.gallerySubtitle, { color: iconColor }]}>
               {posts.length} {posts.length === 1 ? "foto" : "fotos"}
             </Text>
           </View>
@@ -741,9 +773,7 @@ export default function ProfileScreen() {
             </View>
           ) : (
             <View style={{ alignItems: "center", marginVertical: 40 }}>
-              <Text style={{ color: COLORS.onSurfaceVariant }}>
-                Aún no hay fotos.
-              </Text>
+              <Text style={{ color: iconColor }}>Aún no hay fotos.</Text>
             </View>
           )}
         </View>
@@ -751,22 +781,32 @@ export default function ProfileScreen() {
         {/* Stats Section */}
         <View style={styles.statsSection}>
           <TouchableOpacity
-            style={styles.statCard}
+            style={[styles.statCard, { backgroundColor: cardColor }]}
             onPress={() => openFollowModal("followers")}
           >
-            <Text style={styles.statValue}>{followers.length}</Text>
-            <Text style={styles.statLabel}>SEGUIDORES</Text>
+            <Text style={[styles.statValue, { color: textColor }]}>
+              {followers.length}
+            </Text>
+            <Text style={[styles.statLabel, { color: iconColor }]}>
+              SEGUIDORES
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.statCard}
+            style={[styles.statCard, { backgroundColor: cardColor }]}
             onPress={() => openFollowModal("following")}
           >
-            <Text style={styles.statValue}>{following.length}</Text>
-            <Text style={styles.statLabel}>AMIGOS</Text>
+            <Text style={[styles.statValue, { color: textColor }]}>
+              {following.length}
+            </Text>
+            <Text style={[styles.statLabel, { color: iconColor }]}>AMIGOS</Text>
           </TouchableOpacity>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{posts.length}</Text>
-            <Text style={styles.statLabel}>PUBLICACIONES</Text>
+          <View style={[styles.statCard, { backgroundColor: cardColor }]}>
+            <Text style={[styles.statValue, { color: textColor }]}>
+              {posts.length}
+            </Text>
+            <Text style={[styles.statLabel, { color: iconColor }]}>
+              PUBLICACIONES
+            </Text>
           </View>
         </View>
       </ScrollView>
@@ -775,15 +815,31 @@ export default function ProfileScreen() {
       {genericAlert && (
         <Modal transparent animationType="fade" visible={true}>
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContentCentered}>
-              <Text style={styles.modalTitle}>{genericAlert.title}</Text>
-              <Text style={styles.modalText}>{genericAlert.message}</Text>
+            <View
+              style={[
+                styles.modalContentCentered,
+                { backgroundColor: cardColor },
+              ]}
+            >
+              <Text style={[styles.modalTitle, { color: textColor }]}>
+                {genericAlert.title}
+              </Text>
+              <Text style={[styles.modalText, { color: textColor }]}>
+                {genericAlert.message}
+              </Text>
               <View style={styles.modalButtons}>
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.modalButtonPrimary]}
+                  style={[styles.modalButton, { backgroundColor: tintColor }]}
                   onPress={() => setGenericAlert(null)}
                 >
-                  <Text style={styles.modalButtonTextPrimary}>OK</Text>
+                  <Text
+                    style={[
+                      styles.modalButtonTextPrimary,
+                      { color: backgroundColor },
+                    ]}
+                  >
+                    OK
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -795,24 +851,50 @@ export default function ProfileScreen() {
       {confirmModal && (
         <Modal transparent animationType="fade" visible={true}>
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContentCentered}>
-              <Text style={styles.modalTitle}>{confirmModal.title}</Text>
-              <Text style={styles.modalText}>{confirmModal.message}</Text>
+            <View
+              style={[
+                styles.modalContentCentered,
+                { backgroundColor: cardColor },
+              ]}
+            >
+              <Text style={[styles.modalTitle, { color: textColor }]}>
+                {confirmModal.title}
+              </Text>
+              <Text style={[styles.modalText, { color: textColor }]}>
+                {confirmModal.message}
+              </Text>
               <View style={styles.modalButtons}>
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.modalButtonSecondary]}
+                  style={[
+                    styles.modalButton,
+                    { backgroundColor: backgroundColor, marginRight: 10 },
+                  ]}
                   onPress={() => setConfirmModal(null)}
                 >
-                  <Text style={styles.modalButtonTextSecondary}>Cancelar</Text>
+                  <Text
+                    style={[
+                      styles.modalButtonTextSecondary,
+                      { color: textColor },
+                    ]}
+                  >
+                    Cancelar
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.modalButtonDanger]}
+                  style={[
+                    styles.modalButton,
+                    { backgroundColor: COLORS.danger || "#aa371c" },
+                  ]}
                   onPress={() => {
                     confirmModal.onConfirm();
                     setConfirmModal(null);
                   }}
                 >
-                  <Text style={styles.modalButtonTextPrimary}>Confirmar</Text>
+                  <Text
+                    style={[styles.modalButtonTextPrimary, { color: "#fff" }]}
+                  >
+                    Confirmar
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -829,67 +911,94 @@ export default function ProfileScreen() {
           onRequestClose={() => setEditModalVisible(false)}
         >
           <View style={styles.modalOverlay}>
-            <View style={[styles.modalContentCentered, { width: "90%" }]}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Editar Mascota</Text>
+            <View
+              style={[
+                styles.modalContentCentered,
+                { width: "90%", backgroundColor: cardColor },
+              ]}
+            >
+              <View
+                style={[styles.modalHeader, { borderBottomColor: borderColor }]}
+              >
+                <Text style={[styles.modalTitle, { color: textColor }]}>
+                  Editar Mascota
+                </Text>
                 <TouchableOpacity onPress={() => setEditModalVisible(false)}>
-                  <MaterialIcons
-                    name="close"
-                    size={24}
-                    color={COLORS.onSurface}
-                  />
+                  <MaterialIcons name="close" size={24} color={iconColor} />
                 </TouchableOpacity>
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Nombre</Text>
-                <TextInput
-                  style={styles.editInput}
-                  value={editForm.name}
-                  onChangeText={(t) => setEditForm({ ...editForm, name: t })}
-                  placeholder="Ej. Max"
-                  placeholderTextColor={COLORS.onSurfaceVariant}
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Raza</Text>
-                <TextInput
-                  style={styles.editInput}
-                  value={editForm.breed}
-                  onChangeText={(t) => setEditForm({ ...editForm, breed: t })}
-                  placeholder="Ej. Bulldog"
-                  placeholderTextColor={COLORS.onSurfaceVariant}
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Sobre Mí</Text>
+                <Text style={[styles.inputLabel, { color: textColor }]}>
+                  Nombre
+                </Text>
                 <TextInput
                   style={[
                     styles.editInput,
-                    { height: 80, textAlignVertical: "top" },
+                    { color: textColor, borderColor: borderColor },
+                  ]}
+                  value={editForm.name}
+                  onChangeText={(t) => setEditForm({ ...editForm, name: t })}
+                  placeholder="Ej. Max"
+                  placeholderTextColor={iconColor}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, { color: textColor }]}>
+                  Raza
+                </Text>
+                <TextInput
+                  style={[
+                    styles.editInput,
+                    { color: textColor, borderColor: borderColor },
+                  ]}
+                  value={editForm.breed}
+                  onChangeText={(t) => setEditForm({ ...editForm, breed: t })}
+                  placeholder="Ej. Bulldog"
+                  placeholderTextColor={iconColor}
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={[styles.inputLabel, { color: textColor }]}>
+                  Sobre Mí
+                </Text>
+                <TextInput
+                  style={[
+                    styles.editInput,
+                    {
+                      height: 80,
+                      textAlignVertical: "top",
+                      color: textColor,
+                      borderColor: borderColor,
+                    },
                   ]}
                   value={editForm.personality}
                   onChangeText={(t) =>
                     setEditForm({ ...editForm, personality: t })
                   }
                   placeholder="Describe a tu mascota..."
-                  placeholderTextColor={COLORS.onSurfaceVariant}
+                  placeholderTextColor={iconColor}
                   multiline
                 />
               </View>
 
               <View style={styles.modalButtons}>
                 <TouchableOpacity
-                  style={[styles.modalButton, styles.modalButtonPrimary]}
+                  style={[styles.modalButton, { backgroundColor: tintColor }]}
                   onPress={handleSaveProfile}
                   disabled={savingEdit}
                 >
                   {savingEdit ? (
-                    <ActivityIndicator size="small" color="#FFF" />
+                    <ActivityIndicator size="small" color={backgroundColor} />
                   ) : (
-                    <Text style={styles.modalButtonTextPrimary}>
+                    <Text
+                      style={[
+                        styles.modalButtonTextPrimary,
+                        { color: backgroundColor },
+                      ]}
+                    >
                       Guardar Perfil
                     </Text>
                   )}
@@ -908,7 +1017,6 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
     paddingTop: Platform.OS === "android" ? 40 : 0,
   },
   scrollContent: {
@@ -922,7 +1030,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 24,
     paddingVertical: 16,
-    backgroundColor: COLORS.background,
   },
   appBarLeft: {
     flexDirection: "row",
@@ -933,16 +1040,13 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: "#FFEBD4",
     marginRight: 12,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFF1E4",
   },
   appBarTitle: {
     fontSize: 24,
     fontWeight: "900",
-    color: COLORS.onSurface,
   },
   notificationButton: {
     width: 40,
@@ -960,7 +1064,6 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     borderWidth: 2,
-    borderColor: "#FAF7F2", // mask background
     backgroundColor: "#C84D3B",
   },
   // Hero Section
@@ -972,12 +1075,7 @@ const styles = StyleSheet.create({
     width: "100%",
     aspectRatio: 4 / 5,
     borderRadius: 24,
-    backgroundColor: COLORS.surfaceContainer,
     transform: [{ rotate: "-1deg" }],
-    shadowColor: COLORS.onSurface,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
     elevation: 8,
     position: "relative",
   },
@@ -992,12 +1090,10 @@ const styles = StyleSheet.create({
   },
   placeholderText: {
     marginTop: 10,
-    color: COLORS.primary,
     fontWeight: "bold",
   },
   uploadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 24,
@@ -1006,7 +1102,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 16,
     right: 16,
-    backgroundColor: "rgba(170, 55, 28, 0.8)", // Semi-transparent danger color
     padding: 10,
     borderRadius: 20,
     shadowColor: "#000",
@@ -1017,11 +1112,12 @@ const styles = StyleSheet.create({
   },
   petInfoContainer: {
     marginTop: 32,
+    borderRadius: 20,
+    padding: 16,
   },
   petName: {
     fontSize: 48,
     fontWeight: "900",
-    color: COLORS.onSurface,
     marginBottom: 12,
   },
   chipsRow: {
@@ -1030,30 +1126,25 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   chipBlue: {
-    backgroundColor: COLORS.secondaryContainer,
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 20,
     marginRight: 8,
   },
   chipBlueText: {
-    color: COLORS.onSecondaryContainer,
     fontWeight: "700",
     fontSize: 14,
   },
   chipYellow: {
-    backgroundColor: COLORS.surfaceContainerHighest,
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 20,
   },
   chipYellowText: {
-    color: COLORS.onSurfaceVariant,
     fontWeight: "700",
     fontSize: 14,
   },
   aboutCard: {
-    backgroundColor: COLORS.surfaceContainerLow,
     padding: 24,
     borderRadius: 16,
     marginBottom: 24,
@@ -1061,7 +1152,6 @@ const styles = StyleSheet.create({
   aboutLabel: {
     fontSize: 12,
     fontWeight: "800",
-    color: COLORS.onSurfaceVariant,
     textTransform: "uppercase",
     letterSpacing: 1.5,
     marginBottom: 12,
@@ -1069,7 +1159,6 @@ const styles = StyleSheet.create({
   aboutText: {
     fontSize: 16,
     lineHeight: 26,
-    color: COLORS.onSurface,
     fontStyle: "italic",
   },
   actionButtonsRow: {
@@ -1077,21 +1166,15 @@ const styles = StyleSheet.create({
   },
   followButton: {
     flex: 1,
-    backgroundColor: COLORS.primary,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 18,
     borderRadius: 16,
     marginRight: 16,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
     elevation: 4,
   },
   followButtonText: {
-    color: COLORS.onPrimary,
     fontWeight: "bold",
     fontSize: 18,
     marginLeft: 8,
@@ -1099,8 +1182,8 @@ const styles = StyleSheet.create({
   shareButton: {
     width: 60,
     height: 60,
-    backgroundColor: COLORS.surfaceContainerHighest,
     borderRadius: 16,
+    borderWidth: 1,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -1117,10 +1200,8 @@ const styles = StyleSheet.create({
   galleryTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: COLORS.onSurface,
   },
   gallerySubtitle: {
-    color: COLORS.onSurfaceVariant,
     fontWeight: "600",
   },
   galleryGrid: {
@@ -1153,27 +1234,20 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: COLORS.surfaceContainerLowest,
     paddingVertical: 20,
     borderRadius: 16,
     alignItems: "center",
     marginHorizontal: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
     elevation: 2,
   },
   statValue: {
     fontSize: 24,
     fontWeight: "900",
-    color: COLORS.primary,
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 10,
     fontWeight: "bold",
-    color: COLORS.onSurfaceVariant,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
@@ -1188,14 +1262,12 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContentCentered: {
-    backgroundColor: COLORS.surfaceContainerLowest,
     borderRadius: 24,
     margin: 24,
     padding: 24,
     alignItems: "center",
   },
   modalContent: {
-    backgroundColor: COLORS.surfaceContainerLowest,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     minHeight: "50%",
@@ -1203,7 +1275,6 @@ const styles = StyleSheet.create({
   },
   modalText: {
     fontSize: 16,
-    color: COLORS.onSurface,
     textAlign: "center",
     marginBottom: 20,
     lineHeight: 24,
@@ -1215,18 +1286,14 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: "bold",
-    color: COLORS.onSurfaceVariant,
     marginBottom: 8,
   },
   editInput: {
-    backgroundColor: COLORS.surfaceContainerLow,
-    color: COLORS.onSurface,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: COLORS.surfaceVariant,
   },
   modalButtons: {
     flexDirection: "row",
@@ -1240,12 +1307,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.surfaceVariant,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: COLORS.onSurface,
   },
   emptyContainer: {
     flex: 1,
@@ -1254,7 +1319,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: COLORS.onSurfaceVariant,
   },
   userListItem: {
     flexDirection: "row",
@@ -1275,19 +1339,14 @@ const styles = StyleSheet.create({
   userNameSm: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.onSurface,
   },
   modalFollowBtn: {
-    backgroundColor: COLORS.primary,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
   },
-  modalFollowingBtn: {
-    backgroundColor: COLORS.surfaceContainerHighest,
-  },
+  modalFollowingBtn: {},
   modalFollowBtnText: {
-    color: COLORS.onPrimary,
     fontWeight: "bold",
     fontSize: 14,
   },

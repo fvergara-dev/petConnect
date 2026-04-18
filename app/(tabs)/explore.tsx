@@ -1,3 +1,4 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
@@ -32,6 +33,12 @@ export default function ExploreScreen() {
   const [currentUserAvatar, setCurrentUserAvatar] = useState<string | null>(
     null,
   );
+
+  const backgroundColor = useThemeColor({}, "background");
+  const tintColor = useThemeColor({}, "tint");
+  const textColor = useThemeColor({}, "text");
+  const cardColor = useThemeColor({}, "card");
+  const iconColor = useThemeColor({}, "icon");
 
   const fetchExploreData = async () => {
     try {
@@ -387,12 +394,12 @@ export default function ExploreScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
+      <View style={[styles.container, { backgroundColor }]}>
         {/* Header */}
         <Animated.View entering={FadeInUp.duration(400)} style={styles.header}>
           <View style={styles.headerLeft}>
-            <View style={styles.avatarContainer}>
+            <View style={[styles.avatarContainer, { borderColor: tintColor }]}>
               <Image
                 source={{
                   uri:
@@ -402,14 +409,18 @@ export default function ExploreScreen() {
                 style={styles.avatar}
               />
             </View>
-            <Text style={styles.headerTitle}>Explorar</Text>
+            <Text style={[styles.headerTitle, { color: textColor }]}>
+              Explorar
+            </Text>
           </View>
           <TouchableOpacity
             style={styles.notificationBtn}
             onPress={() => router.push("/(tabs)/notifications")}
           >
-            <FontAwesome5 name="bell" size={22} color="#8A5A19" solid />
-            {unreadCount > 0 && <View style={styles.badge} />}
+            <FontAwesome5 name="bell" size={22} color={iconColor} solid />
+            {unreadCount > 0 && (
+              <View style={[styles.badge, { borderColor: backgroundColor }]} />
+            )}
           </TouchableOpacity>
         </Animated.View>
 
@@ -420,21 +431,25 @@ export default function ExploreScreen() {
           {/* Search Bar */}
           <Animated.View
             entering={FadeInUp.delay(100).duration(400)}
-            style={styles.searchContainer}
+            style={[
+              styles.searchContainer,
+              { backgroundColor: cardColor, borderColor: tintColor + "40" },
+            ]}
           >
             <FontAwesome5
               name="search"
               size={18}
-              color="#8A5A19"
+              color={iconColor}
               style={styles.searchIcon}
             />
             <TextInput
               style={[
                 styles.searchInput,
+                { color: textColor },
                 Platform.OS === "web" && ({ outlineStyle: "none" } as any),
               ]}
               placeholder="Busca mascotas o amigos..."
-              placeholderTextColor="#B08D6A"
+              placeholderTextColor={iconColor}
               value={searchQuery}
               onChangeText={(text) => {
                 setSearchQuery(text);
@@ -467,13 +482,18 @@ export default function ExploreScreen() {
                     key={category}
                     style={[
                       styles.categoryChip,
-                      isActive && styles.categoryChipActive,
+                      {
+                        backgroundColor: cardColor,
+                        borderColor: tintColor + "40",
+                      },
+                      isActive && { backgroundColor: tintColor },
                     ]}
                     onPress={() => handleCategoryPress(category)}
                   >
                     <Text
                       style={[
                         styles.categoryText,
+                        { color: textColor },
                         isActive && styles.categoryTextActive,
                       ]}
                     >
@@ -491,18 +511,25 @@ export default function ExploreScreen() {
             style={styles.sectionContainer}
           >
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Cuentas sugeridas</Text>
+              <Text style={[styles.sectionTitle, { color: textColor }]}>
+                Cuentas sugeridas
+              </Text>
             </View>
 
             {loadingAccounts ? (
               <ActivityIndicator
                 size="small"
-                color="#8A5A19"
+                color={tintColor}
                 style={{ marginVertical: 20 }}
               />
             ) : suggestedAccounts.length === 0 ? (
               <Text
-                style={{ textAlign: "center", color: "#A07E5B", padding: 20 }}
+                style={{
+                  textAlign: "center",
+                  color: textColor,
+                  padding: 20,
+                  opacity: 0.7,
+                }}
               >
                 No hay nuevas sugerencias.
               </Text>
@@ -513,24 +540,42 @@ export default function ExploreScreen() {
                 contentContainerStyle={styles.suggestedContainer}
               >
                 {suggestedAccounts.map((account) => (
-                  <View key={account.id} style={styles.suggestedCard}>
-                    <View style={styles.suggestedImageContainer}>
+                  <View
+                    key={account.id}
+                    style={[
+                      styles.suggestedCard,
+                      { backgroundColor: cardColor },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.suggestedImageContainer,
+                        { borderColor: tintColor },
+                      ]}
+                    >
                       <Image
                         source={{ uri: account.image }}
                         style={styles.suggestedImage}
                       />
                     </View>
-                    <Text style={styles.suggestedName} numberOfLines={1}>
+                    <Text
+                      style={[styles.suggestedName, { color: textColor }]}
+                      numberOfLines={1}
+                    >
                       {account.name}
                     </Text>
-                    <Text style={styles.suggestedBreed} numberOfLines={1}>
+                    <Text
+                      style={[styles.suggestedBreed, { color: iconColor }]}
+                      numberOfLines={1}
+                    >
                       {account.breed}
                     </Text>
                     <TouchableOpacity
                       style={[
                         styles.followBtn,
+                        { backgroundColor: tintColor },
                         followingMap[account.id]
-                          ? { backgroundColor: "#D1C4A5" }
+                          ? { backgroundColor: backgroundColor }
                           : {},
                       ]}
                       onPress={() => handleFollow(account.id)}
@@ -538,7 +583,8 @@ export default function ExploreScreen() {
                       <Text
                         style={[
                           styles.followBtnText,
-                          followingMap[account.id] ? { color: "#4A2A14" } : {},
+                          { color: "#fff" }, // Keep text white inside tinted buttons
+                          followingMap[account.id] ? { color: textColor } : {},
                         ]}
                       >
                         {followingMap[account.id] ? "Siguiendo" : "Seguir"}
@@ -558,7 +604,7 @@ export default function ExploreScreen() {
             <Text
               style={[
                 styles.sectionTitle,
-                { marginLeft: 20, marginBottom: 15 },
+                { marginLeft: 20, marginBottom: 15, color: textColor },
               ]}
             >
               Explorar comunidad
@@ -567,7 +613,7 @@ export default function ExploreScreen() {
             {loadingPosts ? (
               <ActivityIndicator
                 size="small"
-                color="#8A5A19"
+                color={tintColor}
                 style={{ marginVertical: 20 }}
               />
             ) : (
@@ -635,12 +681,10 @@ export default function ExploreScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FAF7F2",
     paddingTop: Platform.OS === "android" ? 30 : 0,
   },
   container: {
     flex: 1,
-    backgroundColor: "#FAF7F2",
   },
   scrollContent: {
     paddingBottom: 110, // Tab bar padding
@@ -660,11 +704,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#F0EBE1",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 10,
     overflow: "hidden",
+    borderWidth: 1,
   },
   avatar: {
     width: "100%",
@@ -674,7 +718,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#8A5A19",
   },
   notificationBtn: {
     width: 40,
@@ -692,18 +735,17 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     borderWidth: 2,
-    borderColor: "#FAF7F2", // mask background
     backgroundColor: "#C84D3B",
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FCECD9",
     marginHorizontal: 20,
     borderRadius: 25,
     paddingHorizontal: 15,
     marginBottom: 20,
     height: 50,
+    borderWidth: 1,
   },
   searchIcon: {
     marginRight: 10,
@@ -711,7 +753,6 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     height: "100%",
-    color: "#4A2A14",
     fontSize: 16,
     fontWeight: "500",
   },
@@ -721,22 +762,16 @@ const styles = StyleSheet.create({
     paddingBottom: 25,
   },
   categoryChip: {
-    backgroundColor: "#FFF8F0",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
   },
-  categoryChipActive: {
-    backgroundColor: "#8A5A19",
-  },
+  categoryChipActive: {},
   categoryText: {
-    color: "#8A5A19",
     fontWeight: "600",
     fontSize: 14,
   },
-  categoryTextActive: {
-    color: "#FFFFFF",
-  },
+  categoryTextActive: {},
   sectionContainer: {
     marginBottom: 25,
   },
@@ -750,7 +785,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#3E2100",
   },
   suggestedContainer: {
     paddingHorizontal: 20,
@@ -759,7 +793,6 @@ const styles = StyleSheet.create({
   },
   suggestedCard: {
     width: 150,
-    backgroundColor: "#FFFFFF",
     borderRadius: 20,
     padding: 16,
     alignItems: "center",
@@ -770,7 +803,6 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
     borderWidth: 3,
-    borderColor: "#FFB05E",
     padding: 2,
     marginBottom: 10,
   },
@@ -783,23 +815,19 @@ const styles = StyleSheet.create({
   suggestedName: {
     fontSize: 15,
     fontWeight: "700",
-    color: "#4A2A14",
     marginBottom: 2,
   },
   suggestedBreed: {
     fontSize: 12,
-    color: "#A07E5B",
     marginBottom: 15,
   },
   followBtn: {
-    backgroundColor: "#8A5A19",
     width: "100%",
     paddingVertical: 8,
     borderRadius: 20,
     alignItems: "center",
   },
   followBtnText: {
-    color: "#FFFFFF",
     fontWeight: "700",
     fontSize: 13,
   },

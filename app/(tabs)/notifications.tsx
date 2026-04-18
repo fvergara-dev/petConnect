@@ -2,33 +2,32 @@ import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Image,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
+import { useThemeColor } from "../../hooks/use-theme-color";
 import { supabase } from "../../lib/supabase";
 
 const COLORS = {
-  background: "#FAF7F2",
-  primaryText: "#4A2A14",
-  secondaryText: "#7A6451",
-  orangePrimary: "#FDB664",
-  inputBg1: "#FEE0B8",
-  buttonBg: "#8A5A19",
-  linkBlue: "#165D8B",
-  surface: "#fff8f4",
-  surfaceVariant: "#ffddb3",
-  surfaceContainerLowest: "#ffffff",
+  // kept reference for any leftovers
 };
 
 export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const backgroundColor = useThemeColor({}, "background");
+  const textColor = useThemeColor({}, "text");
+  const secondaryTextColor = useThemeColor({}, "secondaryText");
+  const tintColor = useThemeColor({}, "tint");
+  const cardColor = useThemeColor({}, "card");
+  const borderColor = useThemeColor({}, "border");
 
   useFocusEffect(
     useCallback(() => {
@@ -87,7 +86,7 @@ export default function NotificationsScreen() {
 
     let message = "";
     let iconName = "bell";
-    let iconColor = COLORS.secondaryText;
+    let iconColor = secondaryTextColor;
 
     if (item.type === "like") {
       message = "le dio me gusta a tu publicación.";
@@ -96,28 +95,46 @@ export default function NotificationsScreen() {
     } else if (item.type === "comment") {
       message = "comentó tu publicación.";
       iconName = "comment";
-      iconColor = COLORS.linkBlue;
+      iconColor = "#165D8B"; // kept as original semantic color depending on intention, or we can use tintColor
     } else if (item.type === "follow") {
       message = "comenzó a seguirte.";
       iconName = "user-plus";
-      iconColor = COLORS.buttonBg;
+      iconColor = tintColor;
     }
 
     return (
-      <View style={[styles.notificationCard, !item.read && styles.unreadCard]}>
+      <View
+        style={[
+          styles.notificationCard,
+          { backgroundColor: cardColor },
+          !item.read && {
+            backgroundColor: backgroundColor,
+            borderColor: tintColor,
+            borderWidth: 1,
+          },
+        ]}
+      >
         {actorData?.avatar_url ? (
           <Image source={{ uri: actorData.avatar_url }} style={styles.avatar} />
         ) : (
-          <View style={[styles.avatar, styles.avatarPlaceholder]}>
-            <MaterialIcons name="person" size={24} color={COLORS.buttonBg} />
+          <View
+            style={[
+              styles.avatar,
+              styles.avatarPlaceholder,
+              { backgroundColor: borderColor },
+            ]}
+          >
+            <MaterialIcons name="person" size={24} color={tintColor} />
           </View>
         )}
         <View style={styles.textContainer}>
-          <Text style={styles.notificationText}>
-            <Text style={styles.actorName}>{actorName} </Text>
+          <Text style={[styles.notificationText, { color: textColor }]}>
+            <Text style={[styles.actorName, { color: textColor }]}>
+              {actorName}{" "}
+            </Text>
             {message}
           </Text>
-          <Text style={styles.timeText}>
+          <Text style={[styles.timeText, { color: secondaryTextColor }]}>
             {new Date(item.created_at).toLocaleDateString()}
           </Text>
         </View>
@@ -127,17 +144,21 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Notificaciones</Text>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
+      <View style={[styles.header, { backgroundColor }]}>
+        <Text style={[styles.headerTitle, { color: textColor }]}>
+          Notificaciones
+        </Text>
       </View>
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={COLORS.buttonBg} />
+          <ActivityIndicator size="large" color={tintColor} />
         </View>
       ) : notifications.length === 0 ? (
         <View style={styles.center}>
-          <Text style={styles.emptyText}>No tienes notificaciones aún.</Text>
+          <Text style={[styles.emptyText, { color: secondaryTextColor }]}>
+            No tienes notificaciones aún.
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -154,19 +175,16 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
     paddingTop: Platform.OS === "android" ? 40 : 0,
   },
   header: {
     paddingHorizontal: 24,
     paddingBottom: 15,
     paddingTop: 10,
-    backgroundColor: COLORS.background,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: COLORS.primaryText,
   },
   center: {
     flex: 1,
@@ -174,7 +192,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: {
-    color: COLORS.secondaryText,
     fontSize: 16,
   },
   listContent: {
@@ -185,7 +202,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 15,
-    backgroundColor: "#ffffff",
     borderRadius: 16,
     marginBottom: 10,
     shadowColor: "#000",
@@ -194,11 +210,6 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2,
   },
-  unreadCard: {
-    backgroundColor: COLORS.surfaceContainerLowest || "#FFF5E6",
-    borderColor: COLORS.orangePrimary,
-    borderWidth: 1,
-  },
   avatar: {
     width: 46,
     height: 46,
@@ -206,7 +217,6 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   avatarPlaceholder: {
-    backgroundColor: COLORS.surfaceVariant,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -216,15 +226,12 @@ const styles = StyleSheet.create({
   },
   actorName: {
     fontWeight: "bold",
-    color: COLORS.primaryText,
   },
   notificationText: {
-    color: COLORS.primaryText,
     fontSize: 15,
     lineHeight: 20,
   },
   timeText: {
-    color: COLORS.secondaryText,
     fontSize: 12,
     marginTop: 4,
   },

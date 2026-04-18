@@ -1,3 +1,5 @@
+import { useTheme } from "@/context/ThemeContext";
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
@@ -7,8 +9,14 @@ import { supabase } from "../../lib/supabase";
 
 export default function FeedHeader() {
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
   const [avatar, setAvatar] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const backgroundColor = useThemeColor({}, "background");
+  const tintColor = useThemeColor({}, "tint");
+  const textColor = useThemeColor({}, "text");
+  const iconColor = useThemeColor({}, "icon");
 
   useEffect(() => {
     let isMounted = true;
@@ -90,7 +98,7 @@ export default function FeedHeader() {
   );
 
   return (
-    <View style={styles.headerContainer}>
+    <View style={[styles.headerContainer, { backgroundColor }]}>
       <View style={styles.leftGroup}>
         <Image
           source={{
@@ -100,15 +108,29 @@ export default function FeedHeader() {
           }}
           style={styles.avatar}
         />
-        <Text style={styles.headerTitle}>PetConnect</Text>
+        <Text style={[styles.headerTitle, { color: textColor }]}>
+          PetConnect
+        </Text>
       </View>
-      <TouchableOpacity
-        style={styles.notificationBtn}
-        onPress={() => router.push("/(tabs)/notifications")}
-      >
-        <FontAwesome5 name="bell" size={22} color="#4A2A14" solid />
-        {unreadCount > 0 && <View style={styles.badge} />}
-      </TouchableOpacity>
+      <View style={styles.rightGroup}>
+        <TouchableOpacity style={styles.actionBtn} onPress={toggleTheme}>
+          <FontAwesome5
+            name={theme === "dark" ? "sun" : "moon"}
+            size={22}
+            color={iconColor}
+            solid
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.notificationBtn}
+          onPress={() => router.push("/(tabs)/notifications")}
+        >
+          <FontAwesome5 name="bell" size={22} color={iconColor} solid />
+          {unreadCount > 0 && (
+            <View style={[styles.badge, { borderColor: backgroundColor }]} />
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -120,9 +142,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: "#FAF7F2",
   },
   leftGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  rightGroup: {
     flexDirection: "row",
     alignItems: "center",
   },
@@ -137,7 +162,10 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: "900",
-    color: "#4A2A14",
+  },
+  actionBtn: {
+    padding: 5,
+    marginRight: 10,
   },
   notificationBtn: {
     position: "relative",
@@ -151,7 +179,6 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     borderWidth: 2,
-    borderColor: "#FAF7F2", // mask background
     backgroundColor: "#C84D3B",
   },
 });
