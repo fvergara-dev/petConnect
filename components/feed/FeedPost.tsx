@@ -1,9 +1,9 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { Image } from "expo-image";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
   FlatList,
-  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -24,6 +24,7 @@ export default function FeedPost({
   onDelete?: () => void;
   onEdit?: () => void;
 }) {
+  // Likes
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(parseInt(post.likes) || 0);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -48,6 +49,12 @@ export default function FeedPost({
     title: string;
     message: string;
   } | null>(null);
+
+  const cardColor = useThemeColor({}, "card");
+  const textColor = useThemeColor({}, "text");
+  const tintColor = useThemeColor({}, "tint");
+  const backgroundColor = useThemeColor({}, "background");
+  const iconColor = useThemeColor({}, "icon");
   const [confirmDeletePayload, setConfirmDeletePayload] = useState<{
     type: "post" | "comment";
     id?: string;
@@ -115,6 +122,19 @@ export default function FeedPost({
           .from("likes")
           .insert({ user_id: user.id, post_id: post.id });
         if (likeError) throw likeError;
+
+        if (post.authorId && post.authorId !== user.id) {
+          const { error: notifError } = await supabase
+            .from("notifications")
+            .insert({
+              user_id: post.authorId,
+              actor_id: user.id,
+              type: "like",
+              post_id: post.id,
+            });
+          if (notifError)
+            console.error("Error trigger like notification:", notifError);
+        }
       } else {
         // Remover el like
         const { error: unlikeError } = await supabase
@@ -256,6 +276,19 @@ export default function FeedPost({
 
       if (error) throw error;
 
+      if (post.authorId && post.authorId !== user.id) {
+        const { error: notifError } = await supabase
+          .from("notifications")
+          .insert({
+            user_id: post.authorId,
+            actor_id: user.id,
+            type: "comment",
+            post_id: post.id,
+          });
+        if (notifError)
+          console.error("Error trigger comment notification:", notifError);
+      }
+
       setCommentText("");
       // Fetch new comments fully to get user data mappings easily
       await fetchComments();
@@ -289,20 +322,25 @@ export default function FeedPost({
       onRequestClose={() => setGenericAlert(null)}
     >
       <TouchableOpacity
-        style={styles.modalOverlay}
+        style={[styles.modalOverlay, { backgroundColor: "rgba(0,0,0,0.5)" }]}
         activeOpacity={1}
         onPress={() => setGenericAlert(null)}
       >
         <View
           style={[
             styles.modalContent,
-            { width: 300, padding: 24, alignItems: "center" },
+            {
+              width: 300,
+              padding: 24,
+              alignItems: "center",
+              backgroundColor: cardColor,
+            },
           ]}
         >
           <Text
             style={[
               styles.modalTitle,
-              { marginBottom: 12, textAlign: "center" },
+              { marginBottom: 12, textAlign: "center", color: textColor },
             ]}
           >
             {genericAlert?.title}
@@ -310,7 +348,12 @@ export default function FeedPost({
           <Text
             style={[
               styles.caption,
-              { marginTop: 0, marginBottom: 24, textAlign: "center" },
+              {
+                color: textColor,
+                marginTop: 0,
+                marginBottom: 24,
+                textAlign: "center",
+              },
             ]}
           >
             {genericAlert?.message}
@@ -663,12 +706,16 @@ export default function FeedPost({
               style={styles.postAvatar}
             />
             <View>
-              <Text style={styles.userName}>{post.user.name}</Text>
-              <Text style={styles.userSub}>{post.user.location}</Text>
+              <Text style={[styles.userName, { color: textColor }]}>
+                {post.user.name}
+              </Text>
+              <Text style={[styles.userSub, { color: tintColor }]}>
+                {post.user.location}
+              </Text>
             </View>
           </View>
           <TouchableOpacity onPress={showOptions}>
-            <FontAwesome5 name="ellipsis-h" size={16} color="#4A2A14" />
+            <FontAwesome5 name="ellipsis-h" size={16} color={textColor} />
           </TouchableOpacity>
         </View>
 
@@ -679,42 +726,58 @@ export default function FeedPost({
             resizeMode="cover"
           />
 
-          <View style={styles.floatingActionBar}>
+          <View
+            style={[styles.floatingActionBar, { backgroundColor: cardColor }]}
+          >
             <View style={styles.actionGroup}>
               <TouchableOpacity style={styles.actionBtn} onPress={handleLike}>
                 <FontAwesome5
                   name="paw"
                   size={18}
-                  color={liked ? "#FF4B4B" : "#8A5A19"}
+                  color={liked ? "#FF4B4B" : tintColor}
                   solid={liked}
                 />
-                <Text style={styles.actionText}>{likesCount}</Text>
+                <Text style={[styles.actionText, { color: textColor }]}>
+                  {likesCount}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.actionBtn}
                 onPress={handleComment}
               >
-                <FontAwesome5 name="comment" size={18} color="#8A5A19" solid />
-                <Text style={styles.actionText}>{commentsCount}</Text>
+                <FontAwesome5
+                  name="comment"
+                  size={18}
+                  color={tintColor}
+                  solid
+                />
+                <Text style={[styles.actionText, { color: textColor }]}>
+                  {commentsCount}
+                </Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity
               onPress={() => {
                 if (Platform.OS === "web") {
-                  window.alert(
-                    "¡La función de compartir estará disponible pronto!",
-                  );
+                  setGenericAlert({
+                    title: "Error",
+                    message:
+                      "¡La función de compartir estará disponible pronto!",
+                  });
                 } else {
-                  Alert.alert("Compartir", "Función en desarrollo");
+                  setGenericAlert({
+                    title: "Error",
+                    message: "Compartir, Función en desarrollo",
+                  });
                 }
               }}
             >
-              <Ionicons name="share-social" size={22} color="#8A5A19" />
+              <Ionicons name="share-social" size={22} color={tintColor} />
             </TouchableOpacity>
           </View>
         </View>
 
-        <Text style={styles.caption}>
+        <Text style={[styles.caption, { color: textColor }]}>
           <Text style={{ fontWeight: "bold" }}>{post.captionUser} </Text>
           {post.captionText}
         </Text>
@@ -727,12 +790,10 @@ export default function FeedPost({
 
 const styles = StyleSheet.create({
   postContainer: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 24,
     padding: 16,
     marginHorizontal: 20,
     marginBottom: 20,
-    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.05)",
     elevation: 3,
   },
   postHeader: {
@@ -750,16 +811,13 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     marginRight: 10,
-    backgroundColor: "#eee",
   },
   userName: {
     fontSize: 15,
     fontWeight: "700",
-    color: "#4A2A14",
   },
   userSub: {
     fontSize: 11,
-    color: "#8A5A19",
     marginTop: 2,
     textTransform: "uppercase",
     letterSpacing: 0.5,
@@ -775,20 +833,19 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     borderRadius: 20,
-    backgroundColor: "#eee",
   },
   floatingActionBar: {
     position: "absolute",
     bottom: 12,
     left: 12,
     right: 12,
-    backgroundColor: "rgba(235, 230, 224, 0.95)",
     borderRadius: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 14,
+    elevation: 1, // subtle shadow for the pill
   },
   actionGroup: {
     flexDirection: "row",

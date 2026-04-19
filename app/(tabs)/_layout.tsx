@@ -1,20 +1,25 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { FontAwesome5 } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform, StyleSheet, View } from "react-native";
 
-import { FontAwesome5 } from "@expo/vector-icons";
-
 export default function TabLayout() {
+  const backgroundColor = useThemeColor({}, "background");
+  const tintColor = useThemeColor({}, "tint");
+  const backgroundColorSelected = useThemeColor({}, "button");
+  const iconColorUnselected = useThemeColor({}, "tabIconDefault");
+  const iconColorSelected = useThemeColor({}, "buttonText");
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [styles.tabBar, { backgroundColor }],
         tabBarShowLabel: false,
 
         // --- LA SOLUCIÓN DEFINITIVA A LA SUPERPOSICIÓN VIRTUAL ---
         // 1. Elimina el padding invisible que reserva React Navigation para la SafeArea y el texto label
-        safeAreaInsets: { bottom: 0, top: 0, left: 0, right: 0 },
         tabBarItemStyle: {
           flex: 1,
           justifyContent: "center",
@@ -31,12 +36,15 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }) => (
             <View
-              style={[styles.iconContainer, focused && styles.activeBackground]}
+              style={[
+                styles.iconContainer,
+                focused && { backgroundColor: backgroundColorSelected },
+              ]}
             >
               <FontAwesome5
                 name="home"
                 size={22}
-                color={focused ? "#FFFFFF" : "#8A5A19"}
+                color={focused ? iconColorSelected : iconColorUnselected}
                 solid={focused}
               />
             </View>
@@ -48,12 +56,15 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }) => (
             <View
-              style={[styles.iconContainer, focused && styles.activeBackground]}
+              style={[
+                styles.iconContainer,
+                focused && { backgroundColor: backgroundColorSelected },
+              ]}
             >
               <FontAwesome5
                 name="search"
                 size={20}
-                color={focused ? "#FFFFFF" : "#8A5A19"}
+                color={focused ? iconColorSelected : iconColorUnselected}
                 solid={focused}
               />
             </View>
@@ -65,12 +76,35 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }) => (
             <View
-              style={[styles.iconContainer, focused && styles.activeBackground]}
+              style={[
+                styles.iconContainer,
+                focused && { backgroundColor: backgroundColorSelected },
+              ]}
             >
               <FontAwesome5
                 name="plus-square"
                 size={22}
-                color={focused ? "#FFFFFF" : "#8A5A19"}
+                color={focused ? iconColorSelected : iconColorUnselected}
+                solid={focused}
+              />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <View
+              style={[
+                styles.iconContainer,
+                focused && { backgroundColor: backgroundColorSelected },
+              ]}
+            >
+              <FontAwesome5
+                name="bell"
+                size={20}
+                color={focused ? iconColorSelected : iconColorUnselected}
                 solid={focused}
               />
             </View>
@@ -82,12 +116,15 @@ export default function TabLayout() {
         options={{
           tabBarIcon: ({ focused }) => (
             <View
-              style={[styles.iconContainer, focused && styles.activeBackground]}
+              style={[
+                styles.iconContainer,
+                focused && { backgroundColor: backgroundColorSelected },
+              ]}
             >
               <FontAwesome5
                 name="user-alt"
                 size={20}
-                color={focused ? "#FFFFFF" : "#8A5A19"}
+                color={focused ? iconColorSelected : iconColorUnselected}
                 solid={focused}
               />
             </View>
@@ -105,7 +142,6 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     height: 65,
-    backgroundColor: "#FAF7F2",
     borderRadius: 35,
     elevation: 5,
     shadowColor: "#000",
@@ -124,8 +160,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     margin: 0,
     padding: 0,
-  },
-  activeBackground: {
-    backgroundColor: "#8A5A19",
   },
 });

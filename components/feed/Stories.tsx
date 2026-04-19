@@ -1,11 +1,12 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
 import React from "react";
 import {
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const mockStories = [
@@ -36,8 +37,12 @@ const mockStories = [
 ];
 
 export default function Stories() {
+  const cardColor = useThemeColor({}, "card");
+  const textColor = useThemeColor({}, "text");
+  const tintColor = useThemeColor({}, "tint");
+
   return (
-    <View style={styles.storiesContainer}>
+    <View style={[styles.storiesContainer, { backgroundColor: cardColor }]}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -45,15 +50,17 @@ export default function Stories() {
       >
         {mockStories.map((story) => (
           <TouchableOpacity key={story.id} style={styles.storyWrap}>
-            <View style={styles.ring}>
-              <View style={styles.imageWrap}>
+            <View style={[styles.ring, { borderColor: tintColor }]}>
+              <View style={[styles.imageWrap, { borderColor: cardColor }]}>
                 <Image
                   source={{ uri: story.image }}
                   style={styles.storyImage}
                 />
               </View>
             </View>
-            <Text style={styles.storyName}>{story.name}</Text>
+            <Text style={[styles.storyName, { color: textColor }]}>
+              {story.name}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -64,7 +71,6 @@ export default function Stories() {
 const styles = StyleSheet.create({
   storiesContainer: {
     paddingVertical: 10,
-    backgroundColor: "#FAF7F2",
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -78,7 +84,6 @@ const styles = StyleSheet.create({
     height: 76,
     borderRadius: 38,
     borderWidth: 2,
-    borderColor: "#C88D41", // golden ring
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 6,
@@ -87,10 +92,10 @@ const styles = StyleSheet.create({
     width: 68,
     height: 68,
     borderRadius: 34,
-    backgroundColor: "#FCECDA",
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
+    borderWidth: 2,
   },
   storyImage: {
     width: "100%",
@@ -99,6 +104,5 @@ const styles = StyleSheet.create({
   storyName: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#8A5A19", // matching brown for unread labels
   },
 });

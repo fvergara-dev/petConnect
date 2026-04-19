@@ -1,50 +1,76 @@
-# Welcome to your Expo app 👋
+# PetConnect 🐾
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+PetConnect es una red social diseñada de dueños para dueños, donde puedes compartir los mejores momentos de tus mascotas, descubrir amiguitos nuevos y crear una gran comunidad.
 
-## Get started
+## 🚀 Características Principales
 
-1. Install dependencies
+- **Perfiles de Mascotas**: Configura la información de tu compañero (nombre, raza, biografía).
+- **Feed Social y Exploración**: Comparte fotos, visualiza posts de otros usuarios en una estructura tipo Masonry y descubre nuevas mascotas.
+- **Interacciones**: Da _Me gusta_, comenta en los posts y sigue a otros perfiles.
+- **Notificaciones en Tiempo Real**: Entérate al instante cuando alguien interactúa con tu contenido o comienza a seguirte.
+- **Modo Oscuro Integrado**: La aplicación se adapta fluidamente a los temas claros y oscuros del sistema y permite seleccionarlo manualmente.
+
+## 🛠 Tecnologías Utilizadas
+
+- **[Expo](https://expo.dev/) & React Native**: Framework para desarrollo móvil multiplataforma.
+- **[Expo Router](https://docs.expo.dev/router/introduction/)**: Sistema de navegación basado en el sistema de archivos.
+- **[Supabase](https://supabase.com/)**: Backend (BaaS) utilizado para:
+  - Autenticación de usuarios.
+  - Base de datos relacional PostgreSQL.
+  - Almacenamiento en la nube (Storage) para fotos.
+  - Eventos y actualizaciones en tiempo real (Realtime).
+
+## ⚙️ Requisitos Previos
+
+- [Node.js](https://nodejs.org/) (versión 18 o superior).
+- Proyecto base de [Supabase](https://supabase.com/) integrado con sus correspondientes tablas (`profiles`, `pets`, `posts`, `notifications`, etc.) y buckets (storage).
+- App **Expo Go** descargada en tu dispositivo para pruebas, o configuradores nativos instalados.
+
+## 🚀 Instalación y Uso
+
+1. **Instalar dependencias**
+   En la raíz del proyecto, ejecuta:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. **Configuración de Variables de Entorno**
+   Renombra o crea un archivo `.env` en la raíz del repositorio y vincula tus credenciales de Supabase:
+
+   ```env
+   EXPO_PUBLIC_SUPABASE_URL=tu_supabase_url
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=tu_supabase_anon_key
+   ```
+
+3. **Iniciar el servidor de desarrollo**
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+   Se desplegará un menú junto a un código QR. En la terminal puedes pulsar:
+   - **`a`** para abrir en un emulador de Android.
+   - **`i`** para abrir en un simulador de iOS.
+   - Alternativamente, escanea el código QR con **Expo Go** (Android) o la app de Cámara (iOS) para correrlo en tu dispositivo físico.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## � Dependencias Principales
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Entre las bibliotecas más importantes que utiliza el proyecto se encuentran:
 
-## Get a fresh project
+- **`@supabase/supabase-js`**: Cliente oficial para interactuar con la base de datos, el storage y la autenticación de Supabase.
+- **`expo-router`**: Sistema principal de manejo de rutas y navegación.
+- **`@react-navigation/bottom-tabs`**: Utilizado indirectamente/directamente para las vistas de la barra inferior.
+- **`expo-image-picker`**: Permite al usuario seleccionar fotos de la galería o tomar nuevas con la cámara para los posts o avatares.
+- **`@expo/vector-icons`**: Iconografía de la interfaz gráfica.
+- **`@react-native-async-storage/async-storage`**: Almacenamiento persistente en el dispositivo (utilizado para guardar el tema elegido y sesiones).
 
-When you're ready, run:
+## �📁 Estructura Principal
 
-```bash
-npm run reset-project
-```
+- **`app/`**: Pantallas principales y enrutamiento. Contiene la carpeta `(tabs)` que aloja la navegación inferior (Feed, Buscar, Crear, Notificaciones, Perfil).
+- **`components/`**: Componentes reutilizables de UI (ej. tipografías, botones, contenedores temáticos).
+- **`hooks/`**: Custom hooks para manejo de estados globales (ej. `useThemeColor`).
+- **`constants/`**: Variables fijas, como `theme.ts` donde se define la paleta para Dark/Light Mode.
+- **`lib/`**: Lógica de clientes externos, como la instanciación de `supabase.ts`.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---

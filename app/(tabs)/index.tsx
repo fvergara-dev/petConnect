@@ -1,7 +1,8 @@
 import FeedHeader from "@/components/feed/FeedHeader";
 import FeedPost from "@/components/feed/FeedPost";
 import Stories from "@/components/feed/Stories";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -21,13 +22,15 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { supabase } from "../../lib/supabase";
 
 export default function FeedScreen() {
-  const router = useRouter();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [editingPost, setEditingPost] = useState<any>(null);
   const [editContent, setEditContent] = useState("");
+
+  const backgroundColor = useThemeColor({}, "background");
+  const tintColor = useThemeColor({}, "tint");
 
   const fetchPosts = async () => {
     try {
@@ -197,17 +200,17 @@ export default function FeedScreen() {
       <SafeAreaView
         style={[
           styles.safeArea,
-          { justifyContent: "center", alignItems: "center" },
+          { justifyContent: "center", alignItems: "center", backgroundColor },
         ]}
       >
-        <ActivityIndicator size="large" color="#8A5A19" />
+        <ActivityIndicator size="large" color={tintColor} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
+      <View style={[styles.container, { backgroundColor }]}>
         <FeedHeader />
 
         <ScrollView
@@ -217,7 +220,7 @@ export default function FeedScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#8A5A19"
+              tintColor={tintColor}
             />
           }
         >
@@ -225,7 +228,7 @@ export default function FeedScreen() {
             <Stories />
           </Animated.View>
 
-          <View style={styles.feedContainer}>
+          <View style={[styles.feedContainer, { backgroundColor }]}>
             {posts.map((post, index) => (
               <Animated.View
                 key={post.id}
@@ -252,10 +255,15 @@ export default function FeedScreen() {
           onRequestClose={() => setEditingPost(null)}
         >
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Editar Publicación</Text>
+            <View style={[styles.modalContent, { backgroundColor }]}>
+              <Text style={[styles.modalTitle, { color: tintColor }]}>
+                Editar Publicación
+              </Text>
               <TextInput
-                style={styles.modalInput}
+                style={[
+                  styles.modalInput,
+                  { color: tintColor, borderColor: tintColor },
+                ]}
                 multiline
                 numberOfLines={4}
                 value={editContent}
@@ -268,7 +276,10 @@ export default function FeedScreen() {
                 >
                   <Text style={styles.cancelText}>Cancelar</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.saveButton} onPress={saveEdit}>
+                <TouchableOpacity
+                  style={[styles.saveButton, { backgroundColor: tintColor }]}
+                  onPress={saveEdit}
+                >
                   <Text style={styles.saveText}>Guardar</Text>
                 </TouchableOpacity>
               </View>
@@ -283,19 +294,16 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FAF7F2",
     paddingTop: Platform.OS === "android" ? 30 : 0,
   },
   container: {
     flex: 1,
-    backgroundColor: "#FAF7F2",
   },
   scrollContent: {
     paddingBottom: 100, // Space for Bottom Tab
   },
   feedContainer: {
     marginTop: 10,
-    backgroundColor: "#FAF7F2",
   },
   fab: {
     position: "absolute",
@@ -304,10 +312,8 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: "#8A5A19",
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#8A5A19",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.4,
     shadowRadius: 10,
@@ -321,7 +327,6 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: "85%",
-    backgroundColor: "#FFF",
     borderRadius: 20,
     padding: 20,
     alignItems: "center",
@@ -334,16 +339,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#4A2A14",
     marginBottom: 15,
   },
   modalInput: {
     width: "100%",
-    backgroundColor: "#F7F5F0",
     borderRadius: 12,
     padding: 15,
     textAlignVertical: "top",
-    color: "#4A2A14",
     minHeight: 100,
     marginBottom: 20,
   },
@@ -368,7 +370,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 12,
     borderRadius: 12,
-    backgroundColor: "#8A5A19",
     marginLeft: 10,
     alignItems: "center",
   },
